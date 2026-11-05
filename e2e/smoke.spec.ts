@@ -729,8 +729,10 @@ test.describe("invoice builder", () => {
         const canonicalOf = (html: string) =>
             html.match(/rel="canonical"[^>]*href="([^"]+)"/i)?.[1] ?? "";
 
-        // Every locale served one English title and one canonical before this.
-        expect(titleOf(enHtml)).not.toBe(titleOf(azHtml));
+        // The product name is the same in every locale. Locale identity for
+        // crawlers is the canonical URL, which still differs.
+        expect(titleOf(enHtml)).toBe("RW Grading Estimates");
+        expect(titleOf(azHtml)).toBe("RW Grading Estimates");
         expect(canonicalOf(enHtml)).toMatch(/\/en$/);
         expect(canonicalOf(azHtml)).toMatch(/\/az$/);
 
