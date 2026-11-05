@@ -73,6 +73,9 @@ export default function EstimateWorkspace() {
     const [pdfBusy, setPdfBusy] = useState(false);
     const preserved = useRef<unknown[]>([]);
     const fileRef = useRef<HTMLInputElement>(null);
+    // A draft that fails validation stays in storage. Autosave must not
+    // replace it with the blank estimate opened in its place.
+    const blockDraftWrite = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -86,6 +89,8 @@ export default function EstimateWorkspace() {
             const parsedLibrary = parseLibrary(storedLibrary);
             const storedDraft = await readSecure<unknown>(DRAFT_KEY);
             const draft = estimateSchema.safeParse(storedDraft);
+            const unreadDraft = !draft.success && storedDraft != null;
+            blockDraftWrite.current = unreadDraft;
             const current = draft.success
                 ? recalculate(draft.data)
                 : createDocument(
@@ -95,6 +100,11 @@ export default function EstimateWorkspace() {
                       localIsoDate()
                   );
             if (!active) return;
+            if (unreadDraft) {
+                setNotice(
+                    "A saved draft could not be opened. It was left in storage."
+                );
+            }
             preserved.current = parsedLibrary.preserved;
             setCatalog(nextCatalog);
             setCatalogDraft(nextCatalog);
@@ -113,7 +123,7 @@ export default function EstimateWorkspace() {
     }, []);
 
     useEffect(() => {
-        if (!ready || !doc) return;
+        if (!ready || !doc || blockDraftWrite.current) return;
         setDraftState("Saving draft…");
         const timer = window.setTimeout(() => {
             void writeSecure(DRAFT_KEY, doc).then((ok) => {
@@ -246,6 +256,7 @@ export default function EstimateWorkspace() {
     }
 
     function startNew() {
+        blockDraftWrite.current = false;
         const created = createDocument(
             catalog,
             library,
@@ -315,6 +326,7 @@ export default function EstimateWorkspace() {
         document: EstimateDocument,
         replaced: boolean
     ) {
+        blockDraftWrite.current = false;
         try {
             const rows = library.some((row) => row.id === document.id)
                 ? upsertLibrary(library, document)
@@ -389,6 +401,7 @@ export default function EstimateWorkspace() {
     }
 
     function openSaved(row: EstimateDocument) {
+        blockDraftWrite.current = false;
         const copy = recalculate(structuredClone(row));
         setDoc(copy);
         void writeSecure(DRAFT_KEY, copy);
@@ -415,7 +428,7 @@ export default function EstimateWorkspace() {
             <div className="min-w-0 space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
                     <h1 className="mr-auto text-xl font-semibold">
-                        RW Grading estimate
+                        RW Grading Estimates
                     </h1>
                     <span data-testid="status" className="text-sm uppercase">
                         {doc.status}
@@ -1259,27 +1272,29 @@ function LineEditor(props: {
                     )}
             </div>
             <div className="grid gap-2 sm:grid-cols-4">
-                {formula && line.category !== "mobilization" && (
-                    <NumLabel
-                        label={
-                            line.category === "fuel" ? "Gallons" : "Quantity"
-                        }
-                        value={line.quantity}
-                        onChange={(quantity) => onChange({ quantity })}
-                    />
-                )}
-                {line.category !== "mobilization" && (
-                    <label className="text-sm">
-                        Unit
-                        <input
-                            aria-label="Unit"
-                            className={field}
-                            value={line.unit}
-                            onChange={(event) =>
-                                onChange({ unit: event.target.value })
+                {!(formula && line.category === "mobilization") && (
+                    <>
+                        <NumLabel
+                            label={
+                                formula && line.category === "fuel"
+                                    ? "Gallons"
+                                    : "Quantity"
                             }
+                            value={line.quantity}
+                            onChange={(quantity) => onChange({ quantity })}
                         />
-                    </label>
+                        <label className="text-sm">
+                            Unit
+                            <input
+                                aria-label="Unit"
+                                className={field}
+                                value={line.unit}
+                                onChange={(event) =>
+                                    onChange({ unit: event.target.value })
+                                }
+                            />
+                        </label>
+                    </>
                 )}
                 {formula && line.category === "vendor" && (
                     <>

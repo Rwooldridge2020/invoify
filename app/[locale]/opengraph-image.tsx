@@ -1,7 +1,5 @@
 import { ImageResponse } from "next/og";
 
-import { getMessages } from "@/i18n/messages";
-
 /**
  * Open Graph card, generated rather than committed.
  *
@@ -11,21 +9,17 @@ import { getMessages } from "@/i18n/messages";
  * to the site unfurled as a bare URL — and `lib/seo.ts` pointed its JSON-LD
  * `image` at a hashed build artefact that 404s after any rebuild.
  */
-export const alt = "Invoify — free invoice generator";
+export const alt = "RW Grading Estimates";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function OpengraphImage(props: {
+export default async function OpengraphImage(_props: {
     params: Promise<{ locale: string }>;
 }) {
-    const { locale } = await props.params;
-    const messages = await getMessages(locale);
-    const meta = (messages as Record<string, Record<string, string>>)?.meta ?? {};
-
-    const title = meta.ogTitle ?? "Free invoice generator";
+    await _props.params;
+    const title = "RW Grading Estimates";
     const description =
-        meta.ogDescription ??
-        "Thirteen templates. Fill it in, download the PDF. No account.";
+        "Prepare a customer estimate in the browser and download a PDF.";
 
     return new ImageResponse(
         (
@@ -58,10 +52,10 @@ export default async function OpengraphImage(props: {
                             fontWeight: 700,
                         }}
                     >
-                        I
+                        RW
                     </div>
                     <div style={{ color: "#8E88F7", fontSize: 34, fontWeight: 700 }}>
-                        Invoify
+                        RW Grading Estimates
                     </div>
                 </div>
 
@@ -97,7 +91,7 @@ export default async function OpengraphImage(props: {
                         fontSize: 24,
                     }}
                 >
-                    <span>invoify.vercel.app</span>
+                    <span>Estimates</span>
                 </div>
             </div>
         ),

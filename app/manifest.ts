@@ -7,10 +7,10 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "Invoify — Free Invoice Generator",
-        short_name: "Invoify",
+        name: "RW Grading Estimates",
+        short_name: "RW Grading Estimates",
         description:
-            "Build an invoice from thirteen templates and download it as a PDF.",
+            "Prepare a customer estimate in the browser and download a PDF.",
         start_url: "/",
         display: "standalone",
         background_color: "#ffffff",

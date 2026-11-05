@@ -178,3 +178,61 @@ test("estimate PDF is US Letter and a long description runs past one page", asyn
     }
     expect(manyBody.toString("latin1")).not.toContain("INTERNAL-SECRET-NOTE");
 });
+
+test("fixed mobilization quantity stays editable and survives reload", async ({
+    page,
+}) => {
+    test.setTimeout(120_000);
+    await page.goto("/en/estimate");
+    await page.getByRole("button", { name: "Add mobilization line" }).click();
+    await page.getByLabel("Move-in").fill("200");
+    await page.getByLabel("Move-out").fill("200");
+    await page.getByLabel("Waive markup").check();
+    await expect(page.getByTestId("customer-total")).toHaveText(/\$400\.00/);
+
+    await page.getByLabel("Fixed price").check();
+    await page.getByLabel("Quantity").fill("2");
+    await page.getByLabel("Unit").fill("ea");
+    await page.getByRole("spinbutton", { name: "Rate", exact: true }).fill("200");
+    await expect(page.getByTestId("customer-total")).toHaveText(/\$400\.00/);
+
+    const preview = () =>
+        page
+            .getByTestId("customer-preview")
+            .evaluate(
+                (frame: HTMLIFrameElement) =>
+                    frame.contentDocument?.body?.innerText ?? ""
+            );
+    await expect.poll(preview).toContain("$400.00");
+    await expect.poll(preview).not.toContain("Deposit to schedule: $");
+
+    await page.getByRole("button", { name: "Save estimate" }).click();
+    await expect(page.getByText("Draft saved")).toBeVisible();
+    await page.reload();
+    await expect(page.getByLabel("Quantity")).toHaveValue("2");
+    await expect(page.getByLabel("Unit")).toHaveValue("ea");
+    await expect(
+        page.getByRole("spinbutton", { name: "Rate", exact: true })
+    ).toHaveValue("200");
+    await expect(page.getByTestId("customer-total")).toHaveText(/\$400\.00/);
+});
+
+test("clearing the estimate date does not drop the draft", async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.goto("/en/estimate");
+    await page.getByLabel("Customer name").fill("SYNTHETIC Customer");
+    await page.getByLabel("Street").nth(1).fill("100 Test Street");
+    await expect(page.getByText("Draft saved")).toBeVisible();
+
+    await page.getByLabel("Estimate date").fill("");
+    await expect(page.getByText("Saving draft…")).toBeVisible();
+    await expect(page.getByText("Draft saved")).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByLabel("Customer name")).toHaveValue(
+        "SYNTHETIC Customer"
+    );
+    await expect(page.getByLabel("Street").nth(1)).toHaveValue("100 Test Street");
+    await expect(page.getByLabel("Estimate date")).toHaveValue("");
+    await expect(page.getByText("RW Grading Estimates").first()).toBeVisible();
+});

@@ -125,7 +125,7 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
           )
           .join("")}
     </div>
-    ${logo ? `<img class="logo" alt="RW Grading" src="${escapeHtml(logo)}" />` : ""}
+    ${logo ? `<img class="logo" alt="RW Grading Estimates" src="${escapeHtml(logo)}" />` : ""}
   </div>
   <h1>Estimate</h1>
   <div class="meta">

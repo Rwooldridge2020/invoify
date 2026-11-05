@@ -45,7 +45,6 @@ const imageDataUrl = z
         { message: "Image must be an embedded image" }
     );
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const optionalDate = z
     .string()
     .max(10)
@@ -146,9 +145,10 @@ export const estimateSchema = z
         createdAt: z.string().min(10).max(40),
         updatedAt: z.string().min(10).max(40),
         estimateNumber: z.string().min(1).max(40),
-        estimateDate: isoDate,
+        // Blank while a draft is incomplete. A cleared date must still reload.
+        estimateDate: optionalDate,
         validityDays: z.number().int().min(0).max(3650),
-        validThrough: isoDate,
+        validThrough: optionalDate,
         validityDaysOverridden: z.boolean(),
         expirationOverridden: z.boolean(),
         headerOverridden: z.boolean(),

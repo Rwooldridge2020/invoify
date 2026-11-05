@@ -1,4 +1,4 @@
-import { formatMoney, formatQuantity } from "./money";
+import { formatQuantity } from "./money";
 import type { EstimateDocument } from "./schema";
 
 /** Customer PDF fields only. Internal cost, markup, and notes are not copied. */
@@ -61,13 +61,11 @@ export function customerLines(
 }
 
 function notesText(doc: EstimateDocument): string {
+    // Printed notes are only text the user can edit. The calculated deposit
+    // amount stays on the estimate record and in the form; it is not inserted
+    // here, or a second deposit paragraph appears on the PDF.
     const parts: string[] = [];
     if (doc.depositTerms.trim()) parts.push(doc.depositTerms.trim());
-    if (doc.depositAmount !== null) {
-        parts.push(
-            `Deposit to schedule: ${formatMoney(doc.depositAmount)} (${formatQuantity(doc.depositPercent)}%).`
-        );
-    }
     if (doc.scope.trim()) parts.push(doc.scope.trim());
     if (doc.customerNotes.trim()) parts.push(doc.customerNotes.trim());
     return parts.join("\n\n");

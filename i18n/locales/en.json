@@ -221,15 +221,15 @@
     "changeAppearance": "Change the invoice's appearance"
   },
   "meta": {
-    "title": "Free Invoice Generator | Invoify",
-    "description": "Create a professional invoice in minutes. Thirteen templates, your own colours and logo, and a PDF you can download or email. Free, no account needed.",
-    "ogTitle": "Free invoice generator",
-    "ogDescription": "Thirteen templates. Fill it in, download the PDF. No account."
+    "title": "RW Grading Estimates",
+    "description": "RW Grading Estimates prepares a customer estimate in the browser and downloads a PDF. No account.",
+    "ogTitle": "RW Grading Estimates",
+    "ogDescription": "Prepare a customer estimate in the browser and download a PDF."
   },
   "landing": {
-    "h1": "Free invoice generator",
-    "intro": "Invoify builds a professional invoice in your browser and hands you a PDF. Choose one of thirteen templates, set your accent colour and typeface, add your logo and signature, and download or email the result. Nothing is uploaded to an account, because there are no accounts.",
-    "guideH1": "How Invoify works",
+    "h1": "RW Grading Estimates",
+    "intro": "RW Grading Estimates prepares a customer estimate in your browser and downloads a PDF. Open Estimates in the header. Nothing is uploaded to an account, because there are no accounts.",
+    "guideH1": "How RW Grading Estimates works",
     "guideIntro": "A walk through what the invoice generator does and how to use it: the thirteen templates, the things you can change about them, and the three steps from an empty form to a finished PDF.",
     "featuresHeading": "What you get",
     "features": {
@@ -264,7 +264,7 @@
     "faqHeading": "Questions",
     "faq": {
       "1": {
-        "q": "Is Invoify really free?",
+        "q": "Is RW Grading Estimates free?",
         "a": "Yes. There is no paid tier, no trial, and no account to create. The invoice generator, all thirteen templates and the PDF export are free to use."
       },
       "2": {

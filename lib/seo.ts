@@ -48,12 +48,12 @@ export function buildJsonLd(locale: string) {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "@id": `${BASE_URL}/#app`,
-        name: "Invoify",
+        name: "RW Grading Estimates",
         url,
         applicationCategory: "BusinessApplication",
         operatingSystem: "Any",
         description:
-            "Free invoice generator. Build an invoice from thirteen templates and download it as a PDF.",
+            "RW Grading Estimates prepares a customer estimate in the browser and downloads a PDF.",
         inLanguage: locale,
         keywords: ROOTKEYWORDS,
         // Generated on demand by app/[locale]/opengraph-image.tsx, so it cannot

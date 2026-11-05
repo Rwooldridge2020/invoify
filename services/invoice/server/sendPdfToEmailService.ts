@@ -140,7 +140,7 @@ export async function sendPdfToEmailService(
         const mailOptions: SendMailOptions = {
             // A bare display name with no address can be rewritten or flagged
             // by receiving providers.
-            from: `"Invoify" <${NODEMAILER_EMAIL}>`,
+            from: `"RW Grading Estimates" <${NODEMAILER_EMAIL}>`,
             to: email,
             subject: `Invoice Ready: #${invoiceNumber}`,
             html: emailHTML,

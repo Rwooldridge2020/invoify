@@ -25,6 +25,16 @@ const BaseFooter = () => {
                     >
                         Ali Abbasov
                     </a>
+                    {" · "}
+                    Fork of{" "}
+                    <a
+                        href="https://github.com/al1abb/invoify"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+                    >
+                        Invoify
+                    </a>
                 </p>
 
                 <nav>

@@ -221,15 +221,15 @@
     "changeAppearance": "Qaimənin görünüşünü dəyişin"
   },
   "meta": {
-    "title": "Pulsuz Qaimə Yaradıcısı | Invoify",
+    "title": "RW Grading Estimates",
     "description": "Bir neçə dəqiqəyə peşəkar qaimə hazırlayın. On üç şablon, öz rəngləriniz və loqonuz, endirə və ya e-poçtla göndərə biləcəyiniz PDF. Pulsuzdur, qeydiyyat tələb olunmur.",
     "ogTitle": "Pulsuz qaimə yaradıcısı",
     "ogDescription": "On üç şablon. Doldurun, PDF-i endirin. Qeydiyyat yoxdur."
   },
   "landing": {
     "h1": "Pulsuz qaimə yaradıcısı",
-    "intro": "Invoify brauzerinizdə peşəkar qaimə hazırlayır və sizə PDF verir. On üç şablondan birini seçin, vurğu rəngini və şrifti təyin edin, loqonuzu və imzanızı əlavə edin, nəticəni endirin və ya e-poçtla göndərin. Heç nə hesaba yüklənmir, çünki hesab anlayışı yoxdur.",
-    "guideH1": "Invoify necə işləyir",
+    "intro": "RW Grading Estimates brauzerinizdə peşəkar qaimə hazırlayır və sizə PDF verir. On üç şablondan birini seçin, vurğu rəngini və şrifti təyin edin, loqonuzu və imzanızı əlavə edin, nəticəni endirin və ya e-poçtla göndərin. Heç nə hesaba yüklənmir, çünki hesab anlayışı yoxdur.",
+    "guideH1": "RW Grading Estimates necə işləyir",
     "guideIntro": "Qaimə yaradıcısının nə etdiyini və ondan necə istifadə olunduğunu addım-addım izah edir: on üç şablon, onlarda dəyişə biləcəyiniz şeylər və boş formadan hazır PDF-ə qədər üç addım.",
     "featuresHeading": "Nə əldə edirsiniz",
     "features": {
@@ -264,7 +264,7 @@
     "faqHeading": "Suallar",
     "faq": {
       "1": {
-        "q": "Invoify həqiqətən pulsuzdur?",
+        "q": "RW Grading Estimates həqiqətən pulsuzdur?",
         "a": "Bəli. Ödənişli paket, sınaq müddəti və ya yaradılmalı hesab yoxdur. Qaimə yaradıcısı, on üç şablonun hamısı və PDF ixracı pulsuzdur."
       },
       "2": {

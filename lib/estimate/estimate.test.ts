@@ -22,6 +22,7 @@ import {
     MAX_JOB_FILE_BYTES,
     SUGGESTED_CATALOG,
     SUGGESTED_EXCAVATOR_ID,
+    estimateSchema,
     type EstimateDocument,
 } from "./schema";
 import { toCustomerView } from "./view";
@@ -149,6 +150,9 @@ describe("formulas", () => {
             moveIn: 200,
             moveOut: 200,
         });
+        assert.equal(mob.quantity, 2);
+        assert.equal(mob.unit, "ea");
+        assert.equal(mob.customerUnitPrice, 200);
         assert.equal(mob.customerTotal, 400);
         assert.equal(mob.formula, "fixed price");
         const fuel = createLine("fuel", rules, {
@@ -254,6 +258,15 @@ describe("snapshots", () => {
         assert.equal(doc.depositPercent, 30);
         assert.equal(doc.depositTerms, "COD. 30% deposit to schedule.");
         assert.equal(doc.validThrough, "2026-11-21");
+        const cleared = recalculate({
+            ...doc,
+            customer: { ...doc.customer, name: "SYNTHETIC Customer" },
+            estimateDate: "",
+        });
+        assert.equal(cleared.estimateDate, "");
+        assert.equal(cleared.validThrough, "");
+        assert.equal(cleared.customer.name, "SYNTHETIC Customer");
+        assert.equal(estimateSchema.safeParse(cleared).success, true);
         assert.equal(addDays("2026-10-22", 30), "2026-11-21");
         const custom = recalculate({
             ...doc,
@@ -504,6 +517,9 @@ describe("customer pdf html", () => {
         assert.equal(html.includes("markup"), false);
         assert.equal(html.includes("$100.00"), false);
         assert.equal(html.includes("$110.00"), true);
+        assert.equal(html.includes("Deposit to schedule: $"), false);
+        assert.equal(html.includes("COD. 30% deposit to schedule."), true);
+        assert.equal(doc.depositAmount, 33);
         for (const label of [
             "Estimate",
             "ADDRESS",

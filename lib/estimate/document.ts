@@ -57,10 +57,11 @@ export function recalculate(doc: EstimateDocument): EstimateDocument {
     const depositTerms = doc.depositTermsOverridden
         ? doc.depositTerms
         : termsForPercent(doc.depositPercent);
-    const validThrough =
-        doc.expirationOverridden || !isIsoDate(doc.estimateDate)
-            ? doc.validThrough
-            : addDays(doc.estimateDate, doc.validityDays);
+    const validThrough = doc.expirationOverridden
+        ? doc.validThrough
+        : isIsoDate(doc.estimateDate)
+          ? addDays(doc.estimateDate, doc.validityDays)
+          : "";
     return {
         ...doc,
         lines,
