@@ -586,8 +586,10 @@ test.describe("invoice builder", () => {
         expect(bodyA.equals(bodyB)).toBe(false);
     });
 
-    test("every template renders a single A4 page", async ({ request }) => {
-        // 13 layouts; each must produce a valid, single-page A4 document.
+    test("every invoice template renders a single A4 page", async ({ request }) => {
+        // The 13 invoice layouts stay one A4 page. The RW Grading estimate is
+        // US Letter and may be more than one page; e2e/estimate.spec.ts covers
+        // that size and a real multipage document.
         for (let id = 1; id <= 13; id++) {
             const res = await request.post("/api/invoice/generate?locale=en", {
                 data: {
