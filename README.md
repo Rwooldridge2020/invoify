@@ -1,14 +1,12 @@
-[![Discord](https://img.shields.io/badge/Discord-%40Invoify-000000?style=flat&logo=Discord&logoColor=#5865F2)](https://discord.gg/uhXKHbVKHZ)
-[![CI](https://github.com/al1abb/invoify/actions/workflows/ci.yml/badge.svg)](https://github.com/al1abb/invoify/actions/workflows/ci.yml)
-# Invoify
+# RW Grading Estimates
 
-Invoify is a free, web-based invoice generator built with Next.js, TypeScript, React and the shadcn/ui library. Fill in a form, pick a template, and get a real PDF. No account, no subscription, and nothing about your customers stored on a server.
+RW Grading Estimates prepares a customer estimate in the browser and downloads a PDF. Rates, markups, deposit terms, and validity are editable on each job. There is no account, and estimate data stays in the browser unless you export it.
 
-![Invoify Website image](https://github.com/user-attachments/assets/7b7076db-736e-4a82-b61b-cec3c0ff5695)
+This repository is a fork of [Invoify](https://github.com/al1abb/invoify) by Ali Abbasov. The invoice builder from that project is still in the app. New estimate work lives at `/en/estimate`. The GitHub repository name remains `Rwooldridge2020/invoify`.
 
 ## Table of Contents
 
-- [Invoify](#invoify)
+- [RW Grading Estimates](#rw-grading-estimates)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Your data stays in your browser](#your-data-stays-in-your-browser)
@@ -40,11 +38,11 @@ Invoify is a free, web-based invoice generator built with Next.js, TypeScript, R
 - **18 languages,** for both the interface and the generated PDF.
 - **Responsive:** works on a phone as well as a desktop.
 
-A walkthrough of what each part does lives on the [guide page](https://invoify.vercel.app/en/guide).
+A walkthrough of the invoice builder is on the guide page when you run the app (`/en/guide`).
 
 ## Your data stays in your browser
 
-Invoify has no accounts and no database. Everything you enter (the address book, the autosave draft and your saved invoices) is stored locally, and it is encrypted at rest with AES-GCM 256 under a key the browser generates as non-extractable, so the key cannot be copied out of the origin.
+The app has no accounts and no database. Everything you enter (the address book, the autosave draft, saved invoices, and saved estimates) is stored locally, and it is encrypted at rest with AES-GCM 256 under a key the browser generates as non-extractable, so the key cannot be copied out of the origin.
 
 Two things worth being clear about:
 
@@ -81,13 +79,13 @@ Right-to-left layouts are supported for Arabic and Hebrew. Some PDF translations
 ## Demo
 
 > [!NOTE]
-> [Issue #11](https://github.com/al1abb/invoify/issues/11) reports PDF generation problems in Mozilla Firefox and is still open. The automated tests run against Chromium only, so the current state in Firefox is untested.
+> [Upstream issue #11](https://github.com/al1abb/invoify/issues/11) reports PDF generation problems in Mozilla Firefox and is still open. The automated tests run against Chromium only, so the current state in Firefox is untested.
 
-Visit the [live demo](https://invoify.vercel.app) to see Invoify in action.
+Run the app locally and open `/en/estimate`. The upstream Invoify demo is [invoify.vercel.app](https://invoify.vercel.app); that site is not this fork.
 
 ## Getting Started
 
-Follow these instructions to get Invoify up and running on your local machine.
+Follow these instructions to run RW Grading Estimates locally.
 
 ### Prerequisites
 
@@ -98,7 +96,7 @@ Follow these instructions to get Invoify up and running on your local machine.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/al1abb/invoify.git
+   git clone https://github.com/Rwooldridge2020/invoify.git
    cd invoify
    ```
 2. Install dependencies
@@ -152,7 +150,8 @@ The suite builds and serves the production bundle, then runs against it in a des
 
 ## License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+Distributed under the MIT License. Copyright (c) 2023 Ali Abbasov. See [`LICENSE`](LICENSE). Keep that copyright notice with any substantial copy. This fork does not change the license.
 
-## Discord
-Join the Discord server [here](https://discord.gg/uhXKHbVKHZ)
+## Upstream
+
+Invoify: [github.com/al1abb/invoify](https://github.com/al1abb/invoify). Upstream Discord: [discord.gg/uhXKHbVKHZ](https://discord.gg/uhXKHbVKHZ).

@@ -21,7 +21,7 @@ type SendPdfEmailProps = {
 };
 
 export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
-    const logo = `${BASE_URL}/assets/img/invoify-logo.png`;
+    const logo = `${BASE_URL}/assets/img/rw-grading-logo.png`;
     return (
         <Html>
             <Head />
@@ -34,12 +34,12 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                         <Section className="bg-white border-black-950 my-10 px-10 py-4 rounded-md">
                             <Img
                                 src={logo}
-                                alt="Invoify Logo"
+                                alt="RW Grading Estimates"
                                 width={200}
                                 height={120}
                             />
                             <Heading className="leading-tight">
-                                Thanks for using Invoify!
+                                Thanks for using RW Grading Estimates!
                             </Heading>
 
                             <Text>
@@ -54,7 +54,7 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                             <Text>
                                 Best Regards,
                                 <br />
-                                Invoify Team
+                                RW Grading Estimates
                             </Text>
                         </Section>
                     </Container>

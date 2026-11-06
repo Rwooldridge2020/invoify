@@ -51,3 +51,6 @@ yarn-error.log*
 
 # Claude Code local state
 /.claude/settings.local.json
+
+# Private estimate references. Customer pages and PDFs stay out of git.
+/rwg-estimate-layout-refs/

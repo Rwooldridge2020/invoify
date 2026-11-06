@@ -4,10 +4,8 @@ import { useMemo, useState } from "react";
 
 // Next
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import Image from "next/image";
-
-// Assets
-import Logo from "@/public/assets/img/invoify-logo.svg";
 
 // ShadCn
 import {
@@ -40,20 +38,27 @@ const BaseNavbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const { _t } = useTranslationContext();
+    const locale = useLocale();
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
             <nav className="container flex h-16 items-center justify-between gap-4">
-                <Link href="/" className="flex shrink-0 items-center">
+                <Link
+                    href={`/${locale}`}
+                    className="flex min-w-0 items-center gap-2"
+                >
                     <Image
-                        src={Logo}
-                        alt="Invoify Logo"
-                        width={887}
-                        height={294}
+                        src="/assets/img/rw-grading-logo.png"
+                        alt=""
+                        width={2045}
+                        height={870}
                         loading="eager"
                         priority
-                        className="h-9 w-auto sm:h-10"
+                        className="hidden h-8 w-auto shrink-0 sm:block"
                     />
+                    <span className="truncate text-sm font-semibold tracking-tight">
+                        RW Grading Estimates
+                    </span>
                 </Link>
 
                 {/* ? DEV Only */}
@@ -65,6 +70,12 @@ const BaseNavbar = () => {
 
                 {/* Desktop controls */}
                 <div className="hidden items-center gap-2 sm:flex">
+                    <Link
+                        href={`/${locale}/estimate`}
+                        className="text-sm font-medium text-foreground"
+                    >
+                        Estimates
+                    </Link>
                     <LanguageSelector />
                     <ThemeSwitcher />
                 </div>
@@ -85,14 +96,22 @@ const BaseNavbar = () => {
                                 <Settings2 className="h-5 w-5" />
                             </BaseButton>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-[85vw] max-w-sm">
+                        <SheetContent
+                            side="right"
+                            className="w-[85vw] max-w-sm"
+                        >
                             <SheetHeader className="mb-6">
-                                <SheetTitle>
-                                    {_t("navbar.settings")}
-                                </SheetTitle>
+                                <SheetTitle>{_t("navbar.settings")}</SheetTitle>
                             </SheetHeader>
 
                             <div className="flex flex-col gap-4">
+                                <Link
+                                    href={`/${locale}/estimate`}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="text-sm font-medium text-foreground"
+                                >
+                                    Estimates
+                                </Link>
                                 <div className="flex flex-col gap-2">
                                     <span className="text-sm text-muted-foreground">
                                         {_t("navbar.language")}

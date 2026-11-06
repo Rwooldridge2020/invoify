@@ -49,13 +49,9 @@ export async function generateMetadata(props: {
     params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
     const { locale } = await props.params;
-    const messages = await getMessages(locale);
-    const meta = (messages as Record<string, Record<string, string>>)?.meta ?? {};
-
-    const title = meta.title ?? "Invoify | Free Invoice Generator";
+    const title = "RW Grading Estimates";
     const description =
-        meta.description ??
-        "Create invoices effortlessly with Invoify, the free invoice generator. Try it now!";
+        "RW Grading Estimates prepares a customer estimate in the browser and downloads a PDF. No account.";
 
     return {
         // Resolves every relative URL below, including the generated OG image.
@@ -70,7 +66,7 @@ export async function generateMetadata(props: {
         },
         openGraph: {
             type: "website",
-            siteName: "Invoify",
+            siteName: "RW Grading Estimates",
             title,
             description,
             url: localePath(locale),
@@ -172,7 +168,7 @@ export default async function LocaleLayout(props: {
                             data-cfasync="false"
                             data-id="aliabb"
                             data-description="Support me on Buy me a coffee!"
-                            data-message="Thank you for using Invoify"
+                            data-message="Thank you for using RW Grading Estimates"
                             data-color="#5F7FFF"
                             data-position="Right"
                             data-x_margin="18"
