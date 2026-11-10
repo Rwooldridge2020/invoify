@@ -17,6 +17,7 @@ import {
     upsertLibrary,
 } from "./document";
 import { customerEstimateHtml } from "./html";
+import { estimateToInvoice } from "./toInvoice";
 import { roundHalfUp, sumMoney } from "./money";
 import {
     MAX_JOB_FILE_BYTES,
@@ -561,5 +562,57 @@ describe("customer pdf html", () => {
         const longHtml = customerEstimateHtml(toCustomerView(padded, ""));
         assert.equal(longHtml.includes(long), true);
         assert.equal(longHtml.includes("INTERNAL-SECRET-NOTE"), false);
+    });
+});
+
+describe("convert to invoice", () => {
+    it("copies the customer total and does not change the estimate", () => {
+        const doc = recalculate({
+            ...quote(),
+            customer: { ...quote().customer, name: "SYNTHETIC Customer" },
+            customerNotes: "SYNTHETIC terms",
+            exclusions: "SYNTHETIC exclusion",
+            internalNotes: "INTERNAL-SECRET-NOTE",
+            lines: [
+                createLine("labor", SUGGESTED_CATALOG.rules, {
+                    name: "SYNTHETIC labor",
+                    description: "A wrapped synthetic description",
+                    quantity: 4,
+                    unit: "hr",
+                }),
+                createLine("equipment", SUGGESTED_CATALOG.rules, {
+                    name: "SYNTHETIC machine",
+                    description: "Two days",
+                    pricingMode: "fixed",
+                    rate: 150,
+                    quantity: 2,
+                    unit: "day",
+                }),
+            ],
+        });
+        const before = doc.customerTotal;
+        const invoice = estimateToInvoice(doc, {
+            invoiceNumber: "INV0008",
+            invoiceDate: "2026-11-10T17:00:00.000Z",
+        });
+        assert.equal(before, 400);
+        assert.equal(invoice.details.totalAmount, before);
+        assert.equal(invoice.details.subTotal, before);
+        assert.equal(doc.customerTotal, before);
+        assert.equal(doc.internalNotes, "INTERNAL-SECRET-NOTE");
+        assert.equal(invoice.details.invoiceNumber, "INV0008");
+        assert.equal(invoice.details.invoiceDate, "2026-11-10T17:00:00.000Z");
+        assert.equal(invoice.details.items[0].quantity, 4);
+        assert.equal(invoice.details.items[0].unitPrice, 25);
+        assert.equal(invoice.details.items[0].total, 100);
+        assert.match(invoice.details.items[0].description, /Unit: hr/);
+        assert.equal(invoice.details.items[1].unitPrice, 150);
+        assert.equal(invoice.details.items[1].total, 300);
+        assert.match(invoice.details.items[1].description, /Unit: day/);
+        assert.equal(invoice.details.paymentTerms.includes("SYNTHETIC terms"), true);
+        assert.equal(invoice.details.additionalNotes, "SYNTHETIC exclusion");
+        assert.equal(JSON.stringify(invoice).includes("INTERNAL-SECRET-NOTE"), false);
+        assert.equal(invoice.sender.name, "RW Grading LLC");
+        assert.equal(invoice.receiver.name, "SYNTHETIC Customer");
     });
 });

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useLocale } from "next-intl";
+
 import { editLine, createLine } from "@/lib/estimate/calculate";
 import {
     DEFAULTS_KEY,
@@ -33,9 +35,13 @@ import {
     type EstimateDocument,
     type EstimateLine,
 } from "@/lib/estimate/schema";
+import { estimateToInvoice } from "@/lib/estimate/toInvoice";
 import { toCustomerView } from "@/lib/estimate/view";
 import { documentFileName } from "@/lib/downloadName";
+import { nextInvoiceNumber } from "@/lib/invoiceNumber";
 import { readSecure, writeSecure } from "@/lib/secureStore";
+import { LOCAL_STORAGE_INVOICE_DRAFT_KEY } from "@/lib/variables";
+import type { InvoiceType } from "@/types";
 
 const LOGO_SRC = "/assets/img/rw-grading-logo.png";
 
@@ -57,6 +63,7 @@ function asNumber(value: string): number {
 }
 
 export default function EstimateWorkspace() {
+    const locale = useLocale();
     const [ready, setReady] = useState(false);
     const [catalog, setCatalog] = useState<EstimateCatalog>(SUGGESTED_CATALOG);
     const [catalogDraft, setCatalogDraft] =
@@ -352,6 +359,32 @@ export default function EstimateWorkspace() {
         }
     }
 
+    async function convertToInvoice() {
+        if (!doc) return;
+        // The invoice page reads its draft once, when the layout mounts. A
+        // client navigation would keep that layout alive, so this is a full
+        // load. The estimate itself is written first and left as it is.
+        const estimateSaved = await writeSecure(DRAFT_KEY, doc);
+        const saved = await readSecure<InvoiceType[]>("savedInvoices");
+        const invoiceNumber = nextInvoiceNumber(
+            Array.isArray(saved) ? saved : []
+        );
+        const now = new Date();
+        const invoiceDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            12
+        ).toISOString();
+        const draft = estimateToInvoice(doc, { invoiceNumber, invoiceDate });
+        const ok = await writeSecure(LOCAL_STORAGE_INVOICE_DRAFT_KEY, draft);
+        if (!estimateSaved || !ok) {
+            setError("Could not open the invoice.");
+            return;
+        }
+        window.location.assign(`/${locale}`);
+    }
+
     async function downloadPdf() {
         if (!doc) return;
         setPdfBusy(true);
@@ -513,6 +546,13 @@ export default function EstimateWorkspace() {
                         disabled={pdfBusy}
                     >
                         Download PDF
+                    </button>
+                    <button
+                        type="button"
+                        className={btn}
+                        onClick={() => void convertToInvoice()}
+                    >
+                        Convert to Invoice
                     </button>
                     <input
                         ref={fileRef}
