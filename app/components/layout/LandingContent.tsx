@@ -144,18 +144,21 @@ export default async function LandingContent({
                     <h2 className="text-xl font-semibold tracking-tight">
                         {landing.faqHeading}
                     </h2>
-                    <dl className="mt-6 divide-y divide-border border-t border-border">
+                    <div className="mt-6 border-t border-border">
                         {Object.values(landing.faq).map((item) => (
-                            <div key={item.q} className="py-5">
-                                <dt className="text-base font-medium">
+                            <details
+                                key={item.q}
+                                className="border-b border-border"
+                            >
+                                <summary className="cursor-pointer py-4 text-base font-medium">
                                     {item.q}
-                                </dt>
-                                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                </summary>
+                                <p className="pb-4 text-sm leading-relaxed text-muted-foreground">
                                     {item.a}
-                                </dd>
-                            </div>
+                                </p>
+                            </details>
                         ))}
-                    </dl>
+                    </div>
                 </div>
                 )}
             </div>

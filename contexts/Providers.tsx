@@ -35,6 +35,7 @@ import {
   LOCAL_STORAGE_INVOICE_DRAFT_KEY,
   dirForLocale,
 } from "@/lib/variables";
+import { rwGradingLogoDataUrl } from "@/lib/rwGradingLogo";
 
 // Helpers
 /**
@@ -51,9 +52,19 @@ const readDraft = async (): Promise<InvoiceType | null> => {
    * type yet.
    */
   const parsed = await readSecure<{
+    sender?: { customInputs?: unknown };
+    receiver?: { customInputs?: unknown };
     details?: { invoiceDate?: unknown; dueDate?: unknown };
   }>(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
   if (!parsed) return null;
+
+  // A draft saved before custom inputs existed omits the array. Reset must
+  // clear it, or the new-invoice website row stays on that job.
+  for (const party of [parsed.sender, parsed.receiver]) {
+    if (party && !Array.isArray(party.customInputs)) {
+      party.customInputs = [];
+    }
+  }
 
   // revive dates
   if (parsed.details) {
@@ -94,10 +105,23 @@ const Providers = ({ children }: ProvidersProps) => {
   // Hydrate once on mount
   useEffect(() => {
     let active = true;
-    readDraft().then((draft) => {
-      if (active && draft) {
+    readDraft().then(async (draft) => {
+      if (!active) return;
+      if (draft) {
         form.reset(draft, { keepDefaultValues: false });
+        return;
       }
+      // Fresh form only. A saved or imported invoice already replaced these.
+      const logo = await rwGradingLogoDataUrl().catch(() => "");
+      if (!active || !logo) return;
+      const current = form.getValues();
+      if (
+        current.details?.invoiceLogo ||
+        current.sender?.email !== FORM_DEFAULT_VALUES.sender.email
+      ) {
+        return;
+      }
+      form.setValue("details.invoiceLogo", logo, { shouldDirty: false });
     });
     return () => {
       active = false;

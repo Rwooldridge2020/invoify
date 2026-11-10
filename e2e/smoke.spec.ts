@@ -536,6 +536,33 @@ test.describe("invoice builder", () => {
         expect(body.length).toBeGreaterThan(5000);
     });
 
+    test("a PDF generates when bank details are blank", async ({ request }) => {
+        const invoice = {
+            ...SAMPLE_INVOICE,
+            details: {
+                ...SAMPLE_INVOICE.details,
+                invoiceNumber: "NOPAY-1",
+                paymentInformation: {
+                    bankName: "",
+                    accountName: "",
+                    accountNumber: "",
+                },
+            },
+        };
+
+        const res = await request.post("/api/invoice/generate?locale=en", {
+            data: invoice,
+        });
+
+        expect(res.status(), await res.text().catch(() => "")).toBe(200);
+        expect(res.headers()["content-type"]).toContain("application/pdf");
+        const body = await res.body();
+        expect(body.subarray(0, 5).toString()).toBe("%PDF-");
+        expect(body.length).toBeGreaterThan(5000);
+        const disposition = res.headers()["content-disposition"] ?? "";
+        expect(disposition).toContain("RWG_Invoice_Jane-Smith_NOPAY-1.pdf");
+    });
+
     test("identical invoices are served from cache", async ({ request }) => {
         // Unique so this test does not depend on what other tests generated.
         const invoice = {
@@ -761,7 +788,7 @@ test.describe("invoice builder", () => {
         expect(types).toContain("FAQPage");
 
         const faq = blocks.find((b) => b["@type"] === "FAQPage");
-        const rendered = (enHtml.match(/<dt[^>]*>/g) ?? []).length;
+        const rendered = (enHtml.match(/<summary[\s>]/g) ?? []).length;
         expect(faq.mainEntity.length).toBe(rendered);
 
         // There is prose on the page at all.
@@ -1341,6 +1368,11 @@ test.describe("invoice builder", () => {
 
         await seedDraft(page);
         await page.goto("/en");
+        // Defaults are filled immediately. Wait until the saved draft replaces
+        // them, or Save would store the default business instead.
+        await expect(page.locator('input[name="sender.name"]')).toHaveValue(
+            "John Doe"
+        );
 
         await page.getByRole("button", { name: /save sender/i }).click();
         await expect(

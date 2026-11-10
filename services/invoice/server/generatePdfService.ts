@@ -12,6 +12,7 @@ import { getInvoiceTemplate } from "@/lib/helpers";
 
 // Variables
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/variables";
+import { documentFileName } from "@/lib/downloadName";
 
 /** Only known locales are accepted; anything else falls back to the default. */
 function resolveLocale(requested: string | null): string {
@@ -56,9 +57,15 @@ export async function generatePdfService(req: NextRequest) {
      * Identical input, identical output — so re-submitting an unchanged invoice
      * should not cost a full render. Checked before any work is done.
      */
+    const filename = documentFileName(
+        "Invoice",
+        body.receiver?.name ?? "",
+        body.details?.invoiceNumber ?? "",
+        "pdf",
+    );
     const cacheKey = pdfCacheKey(body, locale);
     const cached = getCachedPdf(cacheKey);
-    if (cached) return pdfResponse(cached, true);
+    if (cached) return pdfResponse(cached, true, filename);
 
     try {
         const ReactDOMServer = (await import("react-dom/server")).default;
@@ -140,7 +147,7 @@ export async function generatePdfService(req: NextRequest) {
 
         setCachedPdf(cacheKey, pdf);
 
-        return pdfResponse(pdf, false);
+        return pdfResponse(pdf, false, filename);
     } catch (error) {
         console.error("PDF Generation Error:", error);
         return NextResponse.json(
@@ -159,11 +166,11 @@ export async function generatePdfService(req: NextRequest) {
  * in a shared cache; the in-process cache above never crosses a request
  * boundary and is keyed on the full validated body.
  */
-function pdfResponse(pdf: Uint8Array, cacheHit: boolean) {
+function pdfResponse(pdf: Uint8Array, cacheHit: boolean, filename: string) {
     return new NextResponse(pdf, {
         headers: {
             "Content-Type": "application/pdf",
-            "Content-Disposition": "inline; filename=invoice.pdf",
+            "Content-Disposition": `inline; filename="${filename}"`,
             "Content-Length": String(pdf.byteLength),
             "Cache-Control": "no-store",
             // Diagnostic only — makes a cache hit observable in the network tab

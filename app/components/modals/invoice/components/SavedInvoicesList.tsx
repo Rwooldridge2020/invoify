@@ -41,6 +41,11 @@ const SavedInvoicesList = ({ setModalState }: SavedInvoicesListProps) => {
         // ? Selected cannot be of type InvoiceType because of these 2 variables
         selected.details.dueDate = new Date(selected.details.dueDate);
         selected.details.invoiceDate = new Date(selected.details.invoiceDate);
+        for (const party of [selected.sender, selected.receiver]) {
+            if (party && !Array.isArray(party.customInputs)) {
+                party.customInputs = [];
+            }
+        }
 
         selected.details.invoiceLogo = "";
         selected.details.signature = {

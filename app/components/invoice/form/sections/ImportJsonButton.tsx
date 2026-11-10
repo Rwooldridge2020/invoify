@@ -6,12 +6,19 @@ import { useInvoiceContext } from "@/contexts/InvoiceContext";
 import { useTranslationContext } from "@/contexts/TranslationContext";
 import useToasts from "@/hooks/useToasts";
 import { Import } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ImportJsonButtonType = {
-    setOpen: (open: boolean) => void;
+    setOpen?: (open: boolean) => void;
+    className?: string;
+    variant?: "outline" | "ghost";
 };
 
-const ImportJsonButton = ({ setOpen }: ImportJsonButtonType) => {
+const ImportJsonButton = ({
+    setOpen,
+    className,
+    variant = "outline",
+}: ImportJsonButtonType) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { importInvoice, invoicePdfLoading } = useInvoiceContext();
 
@@ -38,7 +45,7 @@ const ImportJsonButton = ({ setOpen }: ImportJsonButtonType) => {
 
             if (looksLikeJson) {
                 importInvoice(file);
-                setOpen(false);
+                setOpen?.(false);
             } else {
                 importInvoiceError();
             }
@@ -60,11 +67,11 @@ const ImportJsonButton = ({ setOpen }: ImportJsonButtonType) => {
                 className="hidden"
             />
             <BaseButton
-                variant="outline"
+                variant={variant}
                 tooltipLabel={_t("actions.importJsonTooltip")}
                 disabled={invoicePdfLoading}
                 onClick={handleClick}
-                className="w-full sm:w-auto"
+                className={cn("w-full sm:w-auto", className)}
             >
                 <Import />
                 {_t("actions.importJson")}

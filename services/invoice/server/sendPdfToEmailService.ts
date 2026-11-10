@@ -11,6 +11,7 @@ import { SendPdfEmail } from "@/app/components";
 
 // Helpers
 import { fileToBuffer, isValidEmail } from "@/lib/helpers";
+import { safePdfAttachmentName } from "@/lib/downloadName";
 
 // Rate limiting
 import { getClientKey, rateLimit } from "@/lib/server/rateLimit";
@@ -146,7 +147,7 @@ export async function sendPdfToEmailService(
             html: emailHTML,
             attachments: [
                 {
-                    filename: "invoice.pdf",
+                    filename: safePdfAttachmentName(invoicePdf.name),
                     content: invoiceBuffer,
                     contentType: "application/pdf",
                 },

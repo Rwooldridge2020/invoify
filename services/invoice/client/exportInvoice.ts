@@ -1,5 +1,6 @@
 // Variables
 import { EXPORT_INVOICE_API } from "@/lib/variables";
+import { documentFileName } from "@/lib/downloadName";
 
 // Types
 import { ExportTypes, InvoiceType } from "@/types";
@@ -39,7 +40,12 @@ export const exportInvoice = async (
     try {
         const a = document.createElement("a");
         a.href = url;
-        a.download = `invoice.${exportAs.toLowerCase()}`;
+        a.download = documentFileName(
+            "Invoice",
+            formValues.receiver?.name ?? "",
+            formValues.details?.invoiceNumber ?? "",
+            exportAs.toLowerCase()
+        );
         a.click();
     } finally {
         window.URL.revokeObjectURL(url);

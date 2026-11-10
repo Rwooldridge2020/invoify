@@ -17,6 +17,7 @@ import {
     NewInvoiceAlert,
     InvoiceLoaderModal,
     InvoiceExportModal,
+    ImportJsonButton,
     TemplateGallery,
 } from "@/app/components";
 
@@ -149,6 +150,7 @@ const InvoiceActions = () => {
                     )}
 
                     <div className="flex shrink-0 items-center gap-2">
+                        <ImportJsonButton className="w-auto shrink-0" />
                         {/* Fit / actual size — shell only, where the pane has a
                             fixed height to fit against. */}
                         <BaseButton
@@ -229,6 +231,12 @@ const InvoiceActions = () => {
                         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {_t("actions.title")}
                         </h2>
+                        <div className="mb-1">
+                            <ImportJsonButton
+                                variant="ghost"
+                                className="w-full justify-start sm:w-full"
+                            />
+                        </div>
                         {secondaryActions}
                     </div>
                 </div>
