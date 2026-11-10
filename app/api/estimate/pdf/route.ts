@@ -7,7 +7,7 @@ import { customerEstimateHtml } from "@/lib/estimate/html";
 import { estimateSchema, type EstimateDocument } from "@/lib/estimate/schema";
 import { toCustomerView } from "@/lib/estimate/view";
 import { parseJsonBody } from "@/lib/server/validateRequest";
-import { safeFileStem } from "@/lib/estimate/document";
+import { documentFileName } from "@/lib/downloadName";
 import { withPdfPage } from "@/services/invoice/server/pdfPage";
 
 export const runtime = "nodejs";
@@ -55,7 +55,12 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        const filename = `${safeFileStem(doc.estimateNumber, doc.revision)}.pdf`;
+        const filename = documentFileName(
+            "Estimate",
+            doc.customer.name,
+            doc.estimateNumber,
+            "pdf"
+        );
         return new NextResponse(Buffer.from(pdf), {
             status: 200,
             headers: {

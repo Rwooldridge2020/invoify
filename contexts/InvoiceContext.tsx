@@ -22,6 +22,8 @@ import useToasts from "@/hooks/useToasts";
 
 // Services
 import { exportInvoice } from "@/services/invoice/client/exportInvoice";
+import { documentFileName } from "@/lib/downloadName";
+import { rwGradingLogoDataUrl } from "@/lib/rwGradingLogo";
 
 // Validation
 import { InvoiceSchema } from "@/lib/schemas";
@@ -281,22 +283,26 @@ export const InvoiceContextProvider = ({
      * suggestion: the field stays a normal editable input, because an invoice
      * number is a legal identifier and people have their own conventions.
      */
-    reset({
-      ...FORM_DEFAULT_VALUES,
-      details: {
-        ...FORM_DEFAULT_VALUES.details,
-        invoiceNumber: nextInvoiceNumber(savedInvoices),
-      },
-    });
-    setInvoicePdf(new Blob());
+    void (async () => {
+      const invoiceLogo = await rwGradingLogoDataUrl().catch(() => "");
+      reset({
+        ...FORM_DEFAULT_VALUES,
+        details: {
+          ...FORM_DEFAULT_VALUES.details,
+          invoiceLogo,
+          invoiceNumber: nextInvoiceNumber(savedInvoices),
+        },
+      });
+      setInvoicePdf(new Blob());
 
-    // Clear the draft
-    void removeSecure(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
+      // Clear the draft
+      void removeSecure(LOCAL_STORAGE_INVOICE_DRAFT_KEY);
 
-    router.refresh();
+      router.refresh();
 
-    // Toast
-    newInvoiceSuccess();
+      // Toast
+      newInvoiceSuccess();
+    })();
   };
 
   /**
@@ -389,7 +395,13 @@ export const InvoiceContextProvider = ({
       // Create an anchor element to initiate the download
       const a = document.createElement("a");
       a.href = url;
-      a.download = "invoice.pdf";
+      const values = getValues();
+      a.download = documentFileName(
+        "Invoice",
+        values.receiver?.name ?? "",
+        values.details?.invoiceNumber ?? "",
+        "pdf",
+      );
       document.body.appendChild(a);
 
       // Trigger the download
@@ -490,8 +502,18 @@ export const InvoiceContextProvider = ({
   const sendPdfToMail = (email: string) => {
     const fd = new FormData();
     fd.append("email", email);
-    fd.append("invoicePdf", invoicePdf, "invoice.pdf");
-    fd.append("invoiceNumber", getValues().details.invoiceNumber);
+    const mailed = getValues();
+    fd.append(
+      "invoicePdf",
+      invoicePdf,
+      documentFileName(
+        "Invoice",
+        mailed.receiver?.name ?? "",
+        mailed.details?.invoiceNumber ?? "",
+        "pdf",
+      ),
+    );
+    fd.append("invoiceNumber", mailed.details.invoiceNumber);
 
     return fetch(SEND_PDF_API, {
       method: "POST",
@@ -553,6 +575,11 @@ export const InvoiceContextProvider = ({
             importedData.details.dueDate = new Date(
               importedData.details.dueDate
             );
+          }
+        }
+        for (const party of [importedData.sender, importedData.receiver]) {
+          if (party && !Array.isArray(party.customInputs)) {
+            party.customInputs = [];
           }
         }
 

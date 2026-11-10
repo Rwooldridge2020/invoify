@@ -11,7 +11,8 @@ import { InvoiceSchema } from "@/lib/schemas";
 import { parseJsonBody } from "@/lib/server/validateRequest";
 
 // Types
-import { ExportTypes } from "@/types";
+import { ExportTypes, InvoiceType } from "@/types";
+import { documentFileName } from "@/lib/downloadName";
 
 /**
  * Export an invoice in selected format.
@@ -30,7 +31,14 @@ export async function exportInvoiceService(req: NextRequest) {
     const parsed = await parseJsonBody(req, InvoiceSchema);
     if (!parsed.ok) return parsed.response;
 
-    const body = parsed.data;
+    const body = parsed.data as InvoiceType;
+    const fileName = (extension: string) =>
+        documentFileName(
+            "Invoice",
+            body.receiver?.name ?? "",
+            body.details?.invoiceNumber ?? "",
+            extension
+        );
 
     try {
         switch (format) {
@@ -39,8 +47,7 @@ export async function exportInvoiceService(req: NextRequest) {
                 return new NextResponse(jsonData, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Content-Disposition":
-                            "attachment; filename=invoice.json",
+                        "Content-Disposition": `attachment; filename="${fileName("json")}"`,
                     },
                     status: 200,
                 });
@@ -52,8 +59,7 @@ export async function exportInvoiceService(req: NextRequest) {
                 return new NextResponse(csv, {
                     headers: {
                         "Content-Type": "text/csv",
-                        "Content-Disposition":
-                            "attachment; filename=invoice.csv",
+                        "Content-Disposition": `attachment; filename="${fileName("csv")}"`,
                     },
                 });
             }
@@ -64,8 +70,7 @@ export async function exportInvoiceService(req: NextRequest) {
                 return new NextResponse(xml, {
                     headers: {
                         "Content-Type": "application/xml",
-                        "Content-Disposition":
-                            "attachment; filename=invoice.xml",
+                        "Content-Disposition": `attachment; filename="${fileName("xml")}"`,
                     },
                 });
             }

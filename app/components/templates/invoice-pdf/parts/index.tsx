@@ -409,8 +409,7 @@ export function TotalsBlock({
 
             {details.totalAmountInWords && (
                 <p className={`${scale.label} mt-1.5 italic text-gray-500`}>
-                    {labels.totalInWords}: {details.totalAmountInWords}{" "}
-                    {details.currency}
+                    {details.totalAmountInWords}
                 </p>
             )}
         </div>

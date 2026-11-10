@@ -134,7 +134,7 @@
     "printTooltip": "Print invoice",
     "saveTooltip": "Save invoice in website",
     "sendToMailTooltip": "Send invoice PDF to mail",
-    "importJson": "Import JSON",
+    "importJson": "Import",
     "importJsonTooltip": "Import a JSON invoice file",
     "moreActions": "More actions",
     "fitToScreen": "Fit to screen",

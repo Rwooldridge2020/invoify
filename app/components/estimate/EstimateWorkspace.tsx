@@ -18,7 +18,6 @@ import {
     recalculate,
     resetQuoteLines,
     reviseDocument,
-    safeFileStem,
     toJobFile,
     upsertLibrary,
 } from "@/lib/estimate/document";
@@ -35,6 +34,7 @@ import {
     type EstimateLine,
 } from "@/lib/estimate/schema";
 import { toCustomerView } from "@/lib/estimate/view";
+import { documentFileName } from "@/lib/downloadName";
 import { readSecure, writeSecure } from "@/lib/secureStore";
 
 const LOGO_SRC = "/assets/img/rw-grading-logo.png";
@@ -286,7 +286,12 @@ export default function EstimateWorkspace() {
         });
         downloadBlob(
             blob,
-            `${safeFileStem(current.estimateNumber, current.revision)}.json`
+            documentFileName(
+                "Estimate",
+                current.customer.name,
+                current.estimateNumber,
+                "json"
+            )
         );
     }
 
@@ -361,7 +366,12 @@ export default function EstimateWorkspace() {
             const blob = await response.blob();
             downloadBlob(
                 blob,
-                `${safeFileStem(doc.estimateNumber, doc.revision)}.pdf`
+                documentFileName(
+                    "Estimate",
+                    doc.customer.name,
+                    doc.estimateNumber,
+                    "pdf"
+                )
             );
         } catch {
             setError("Could not generate the PDF.");

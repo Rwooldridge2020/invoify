@@ -80,11 +80,8 @@ export const WIZARD_STEPS: WizardStepDef[] = [
         id: 3,
         slug: "payment",
         labelKey: "paymentInfo",
-        requiredFields: [
-            "details.paymentInformation.bankName",
-            "details.paymentInformation.accountName",
-            "details.paymentInformation.accountNumber",
-        ],
+        // Bank name, account name, and account number are optional.
+        requiredFields: [],
         errorPaths: ["details.paymentInformation"],
     },
     {

@@ -131,9 +131,10 @@ const ItemSchema = z.object({
 });
 
 const PaymentInformationSchema = z.object({
-    bankName: fieldValidators.stringMin1,
-    accountName: fieldValidators.stringMin1,
-    accountNumber: fieldValidators.stringMin1,
+    // Optional. A blank estimate or invoice still submits and still prints.
+    bankName: z.string(),
+    accountName: z.string(),
+    accountNumber: z.string(),
 });
 
 const DiscountDetailsSchema = z.object({

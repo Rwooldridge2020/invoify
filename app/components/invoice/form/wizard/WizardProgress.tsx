@@ -128,7 +128,8 @@ const WizardProgress = () => {
                 ...step,
                 label,
                 isValid,
-                isComplete: fieldValues.every(filled),
+                isComplete:
+                    fieldValues.length === 0 || fieldValues.every(filled),
                 isStarted: fieldValues.some(filled),
             };
         });
