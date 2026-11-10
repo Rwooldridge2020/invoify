@@ -236,3 +236,40 @@ test("clearing the estimate date does not drop the draft", async ({ page }) => {
     await expect(page.getByLabel("Estimate date")).toHaveValue("");
     await expect(page.getByText("RW Grading Estimates").first()).toBeVisible();
 });
+
+test("convert to invoice copies the total and leaves the estimate", async ({
+    page,
+}) => {
+    test.setTimeout(120_000);
+    await page.goto("/en/estimate");
+    await page.getByLabel("Customer name").fill("SYNTHETIC Customer");
+    await page.getByRole("button", { name: "Add labor line" }).click();
+    await page.getByLabel("Quantity").fill("4");
+    await expect(page.getByTestId("customer-total")).toHaveText(/\$100\.00/);
+    const estimateNumber = await page.getByLabel("Estimate number").inputValue();
+
+    await page.getByRole("button", { name: "Convert to Invoice" }).click();
+    await expect(page).toHaveURL(/\/en\/?$/);
+    await expect(page.locator('input[name="receiver.name"]')).toHaveValue(
+        "SYNTHETIC Customer"
+    );
+    await expect(page.locator('input[name="sender.name"]')).toHaveValue(
+        "RW Grading LLC"
+    );
+    await page.locator("nav[aria-label] ol button").nth(1).click();
+    await expect(page.locator('input[name="details.invoiceNumber"]')).toHaveValue(
+        "INV0001"
+    );
+    await expect(
+        page.locator('input[name="details.invoiceNumber"]')
+    ).not.toHaveValue(estimateNumber);
+    await page.locator("nav[aria-label] ol button").nth(4).click();
+    await expect(page.getByText("100.00").first()).toBeVisible();
+
+    await page.goto("/en/estimate");
+    await expect(page.getByLabel("Customer name")).toHaveValue(
+        "SYNTHETIC Customer"
+    );
+    await expect(page.getByTestId("customer-total")).toHaveText(/\$100\.00/);
+    await expect(page.getByLabel("Estimate number")).toHaveValue(estimateNumber);
+});

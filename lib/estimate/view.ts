@@ -60,7 +60,7 @@ export function customerLines(
     ].filter((line) => line.trim() !== "");
 }
 
-function notesText(doc: EstimateDocument): string {
+export function printedNotes(doc: EstimateDocument): string {
     // Printed notes are only text the user can edit. The calculated deposit
     // amount stays on the estimate record and in the form; it is not inserted
     // here, or a second deposit paragraph appears on the PDF.
@@ -91,7 +91,7 @@ export function toCustomerView(
             rate: line.customerUnitPrice,
             amount: line.customerTotal,
         })),
-        notes: notesText(doc),
+        notes: printedNotes(doc),
         exclusions: doc.exclusions,
         total: doc.customerTotal,
         acceptedBy: doc.acceptedBy,
