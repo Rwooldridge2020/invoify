@@ -38,6 +38,8 @@ import {
 import { estimateToInvoice } from "@/lib/estimate/toInvoice";
 import { toCustomerView } from "@/lib/estimate/view";
 import { buildBackup, mergeBackup, parseBackup } from "@/lib/backup";
+import BaseButton from "@/app/components/reusables/BaseButton";
+import Subheading from "@/app/components/reusables/Subheading";
 import { documentFileName } from "@/lib/downloadName";
 import { partyStorageKey } from "@/lib/partyStore";
 import { nextInvoiceNumber } from "@/lib/invoiceNumber";
@@ -526,10 +528,10 @@ export default function EstimateWorkspace() {
     );
 
     return (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="min-w-0 space-y-5">
+        <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:gap-12 shell:h-[calc(100dvh-4rem)] shell:grid-cols-[minmax(0,34fr)_minmax(0,66fr)] shell:items-stretch shell:gap-0 shell:overflow-hidden">
+            <div className="@container min-w-0 space-y-5 shell:flex shell:min-h-0 shell:flex-col shell:overflow-y-auto shell:border-e shell:border-border shell:bg-card shell:p-5">
                 <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="mr-auto text-xl font-semibold">
+                    <h1 className="mr-auto text-sm font-medium tracking-tight text-muted-foreground">
                         RW Grading Estimates
                     </h1>
                     <span data-testid="status" className="text-sm uppercase">
@@ -612,14 +614,17 @@ export default function EstimateWorkspace() {
                     >
                         Import all
                     </button>
-                    <button
+                    <BaseButton
                         type="button"
-                        className={btn}
+                        size="sm"
+                        className="rounded-full"
                         onClick={() => void downloadPdf()}
                         disabled={pdfBusy}
+                        loading={pdfBusy}
+                        loadingText="Download PDF"
                     >
                         Download PDF
-                    </button>
+                    </BaseButton>
                     <button
                         type="button"
                         className={btn}
@@ -653,7 +658,7 @@ export default function EstimateWorkspace() {
                     />
                 </div>
                 {confirmNew && (
-                    <div className="flex flex-wrap gap-2 rounded-md border p-3 text-sm">
+                    <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-4 text-sm">
                         <span>
                             Start a new estimate? Save first if this draft
                             should stay in the list.
@@ -675,7 +680,7 @@ export default function EstimateWorkspace() {
                     </div>
                 )}
                 {importChoice && (
-                    <div className="space-y-2 rounded-md border p-3 text-sm">
+                    <div className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
                         <p>
                             This file matches a saved {importChoice.status}{" "}
                             revision. Issued revisions are not replaced.
@@ -769,8 +774,8 @@ export default function EstimateWorkspace() {
                     </label>
                 </section>
 
-                <section className="rounded-md border p-3">
-                    <h2 className="font-semibold">Deposit</h2>
+                <section className="rounded-xl border border-border bg-card p-4">
+                    <Subheading>Deposit</Subheading>
                     <p className="text-sm text-muted-foreground">
                         Default is COD and 30% to schedule. Change it on this
                         quote only.
@@ -806,7 +811,7 @@ export default function EstimateWorkspace() {
                     <label className="mt-2 block text-sm">
                         Deposit terms
                         <textarea
-                            className={field}
+                            className={area}
                             rows={2}
                             value={doc.depositTerms}
                             disabled={locked}
@@ -865,7 +870,7 @@ export default function EstimateWorkspace() {
                 <label className="block text-sm">
                     Scope
                     <textarea
-                        className={field}
+                        className={area}
                         rows={2}
                         value={doc.scope}
                         disabled={locked}
@@ -918,7 +923,7 @@ export default function EstimateWorkspace() {
                 <label className="block text-sm">
                     Notes
                     <textarea
-                        className={field}
+                        className={area}
                         rows={3}
                         value={doc.customerNotes}
                         disabled={locked}
@@ -930,7 +935,7 @@ export default function EstimateWorkspace() {
                 <label className="block text-sm">
                     Exclusions
                     <textarea
-                        className={field}
+                        className={area}
                         rows={3}
                         value={doc.exclusions}
                         disabled={locked}
@@ -944,7 +949,7 @@ export default function EstimateWorkspace() {
                     Internal notes
                     <textarea
                         id="internal-notes"
-                        className={field}
+                        className={area}
                         rows={2}
                         value={doc.internalNotes}
                         disabled={locked}
@@ -980,12 +985,12 @@ export default function EstimateWorkspace() {
                 </div>
 
                 <section
-                    className="rounded-md border border-amber-500/60 p-3"
+                    className="rounded-xl border border-amber-500/60 bg-card p-4"
                     data-testid="internal-panel"
                 >
-                    <h2 className="font-semibold">
+                    <Subheading>
                         Internal — not on the customer PDF
-                    </h2>
+                    </Subheading>
                     <p data-testid="customer-total">
                         Customer total {formatMoney(doc.customerTotal)}
                     </p>
@@ -1023,7 +1028,7 @@ export default function EstimateWorkspace() {
                     </p>
                 </section>
 
-                <details className="rounded-md border p-3">
+                <details className="rounded-xl border border-border bg-card p-4">
                     <summary className="cursor-pointer font-semibold">
                         Reusable defaults
                     </summary>
@@ -1167,7 +1172,7 @@ export default function EstimateWorkspace() {
                 </details>
 
                 <section>
-                    <h2 className="font-semibold">Saved estimates</h2>
+                    <Subheading>Saved estimates</Subheading>
                     <ul className="mt-2 space-y-2">
                         {library.map((row) => (
                             <li
@@ -1198,25 +1203,29 @@ export default function EstimateWorkspace() {
                 </section>
             </div>
 
-            <div className="min-w-0 overflow-x-auto" data-allow-x-overflow>
-                <h2 className="mb-2 text-sm font-medium">
-                    Customer PDF preview
-                </h2>
-                <iframe
-                    title="Customer PDF preview"
-                    data-testid="customer-preview"
-                    className="h-[1100px] w-[816px] max-w-none border bg-white"
-                    srcDoc={preview}
-                />
+            <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:bg-ground" data-allow-x-overflow>
+                <div className="shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:px-8 shell:py-5">
+                    <Subheading className="mb-3">Live Preview</Subheading>
+                    <div className="overflow-hidden rounded-xl border border-border bg-white shell:mx-auto shell:w-full shell:max-w-[46rem] shell:border-black/5 shell:shadow-elevated">
+                        <iframe
+                            title="Customer PDF preview"
+                            data-testid="customer-preview"
+                            className="h-[1100px] w-full max-w-none border-0 bg-white"
+                            srcDoc={preview}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
 
 const btn =
-    "rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50";
+    "inline-flex h-9 items-center justify-center rounded-full border border-input bg-background px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 const field =
-    "mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm";
+    "mt-1 h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+const area =
+    "mt-1 min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 function PartyFields(props: {
     title: string;
@@ -1254,7 +1263,7 @@ function PartyFields(props: {
     const prefix = props.title === "Customer" ? "customer" : "sender";
     return (
         <section className="grid gap-3 sm:grid-cols-2">
-            <h2 className="sm:col-span-2 font-semibold">{props.title}</h2>
+            <Subheading className="sm:col-span-2">{props.title}</Subheading>
             {(
                 [
                     [
@@ -1324,7 +1333,7 @@ function LineEditor(props: {
     const { line, locked, onChange } = props;
     const formula = line.pricingMode === "formula";
     return (
-        <fieldset className="space-y-2 rounded-md border p-3" disabled={locked}>
+        <fieldset className="space-y-2 rounded-xl border border-border bg-card p-4" disabled={locked}>
             <legend className="px-1 text-sm font-semibold">
                 Line {props.index + 1} · {line.category}
                 {line.pricingMode === "fixed" ? " · fixed price" : ""}
@@ -1362,7 +1371,7 @@ function LineEditor(props: {
                 Description
                 <textarea
                     aria-label="Description"
-                    className={field}
+                    className={area}
                     rows={2}
                     value={line.description}
                     onChange={(event) =>
