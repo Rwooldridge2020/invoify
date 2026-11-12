@@ -1,4 +1,5 @@
 import { formatUsDate } from "./dates";
+import { RW_LETTERHEAD } from "./letterhead";
 import { formatMoney } from "./money";
 import { customerLines, senderLines, type CustomerEstimateView } from "./view";
 
@@ -60,8 +61,8 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    color: #222;
-    font-family: Arial, Helvetica, sans-serif;
+    color: ${RW_LETTERHEAD.text};
+    font-family: ${RW_LETTERHEAD.fontFamily};
     font-size: 10.5pt;
     line-height: 1.3;
   }
@@ -69,12 +70,12 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
   .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
   .biz { font-size: 10.5pt; line-height: 1.25; }
   .biz .name { font-weight: 700; }
-  .logo { width: 220px; height: auto; display: block; }
+  .logo { width: ${RW_LETTERHEAD.logoWidth}; height: auto; display: block; }
   h1 {
     margin: 16px 0 8px;
-    font-size: 26pt;
-    font-weight: 500;
-    color: #6d6d6d;
+    font-size: ${RW_LETTERHEAD.titleSize};
+    font-weight: ${RW_LETTERHEAD.titleWeight};
+    color: ${RW_LETTERHEAD.title};
     letter-spacing: 0;
   }
   .meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
@@ -83,11 +84,11 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
   .meta-table { margin-left: auto; border-collapse: collapse; }
   .meta-table td { padding: 0 0 1px 14px; vertical-align: baseline; white-space: nowrap; }
   .meta-table .k { font-weight: 700; text-align: right; }
-  .rule { border: 0; border-top: 1.5px solid #222; margin: 8px 0; }
+  .rule { border: 0; border-top: 1.5px solid ${RW_LETTERHEAD.rule}; margin: 8px 0; }
   table.lines { width: 100%; border-collapse: collapse; }
   table.lines thead { display: table-header-group; }
   table.lines th {
-    background: #efefef;
+    background: ${RW_LETTERHEAD.tableHeader};
     font-size: 8.5pt;
     font-weight: 700;
     text-align: left;

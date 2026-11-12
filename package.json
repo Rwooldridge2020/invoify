@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:unit": "node --import tsx --test lib/estimate/estimate.test.ts lib/downloadName.test.ts lib/server/appPassword.test.ts"
+    "test:unit": "node --import tsx --test lib/estimate/estimate.test.ts lib/downloadName.test.ts lib/schemas.invoice.test.ts lib/branding.test.ts lib/server/pdfRateLimit.test.ts lib/server/appPassword.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -44,7 +44,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.279.0",
-    "next": "15.3.8",
+    "next": "^15.5.29",
     "next-intl": "^4.1.0",
     "next-themes": "^0.2.1",
     "nodemailer": "^6.9.7",
@@ -89,7 +89,7 @@
     "@types/xml2js": "^0.4.13",
     "cross-env": "^7.0.3",
     "eslint": "9.18.0",
-    "eslint-config-next": "15.3.8",
+    "eslint-config-next": "^15.5.29",
     "ignore-loader": "^0.1.2",
     "prettier": "3.4.2",
     "puppeteer": "^24.10.0",

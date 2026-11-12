@@ -58,10 +58,16 @@ function party(source: {
     email: string;
     phone: string;
     website?: string;
+    jobSite?: string;
 }): InvoiceDraft["sender"] {
-    const customInputs = source.website?.trim()
-        ? [{ key: "Website", value: source.website.trim() }]
-        : [];
+    const customInputs = [
+        ...(source.website?.trim()
+            ? [{ key: "Website", value: source.website.trim() }]
+            : []),
+        ...(source.jobSite?.trim()
+            ? [{ key: "Job Site", value: source.jobSite.trim() }]
+            : []),
+    ];
     return {
         name: source.name,
         address: source.address,
