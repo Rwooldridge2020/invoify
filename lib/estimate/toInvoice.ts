@@ -87,6 +87,43 @@ function lineDescription(description: string, unit: string): string {
     return text ? `${text}\nUnit: ${unitText}` : `Unit: ${unitText}`;
 }
 
+function asInvoiceDate(value: string, fallback: string): string {
+    const text = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${text}T12:00:00.000Z`;
+    if (text) return text;
+    return fallback;
+}
+
+/**
+ * Estimate data in the shape the invoice templates already render.
+ * Template 1 is not this path: that PDF stays the letter layout.
+ * Internal notes are not copied.
+ */
+export function estimateAsInvoice(
+    doc: EstimateDocument,
+    templateId: number,
+    logo: string
+): InvoiceDraft {
+    const draft = estimateToInvoice(doc, {
+        invoiceNumber: doc.estimateNumber.trim() || "Estimate",
+        invoiceDate: asInvoiceDate(doc.estimateDate, doc.createdAt),
+    });
+    const due = doc.validThrough.trim()
+        ? asInvoiceDate(doc.validThrough, draft.details.invoiceDate)
+        : draft.details.invoiceDate;
+    return {
+        ...draft,
+        details: {
+            ...draft.details,
+            dueDate: due,
+            invoiceLogo: logo.startsWith("data:image/") || logo.startsWith("/")
+                ? logo
+                : draft.details.invoiceLogo,
+            pdfTemplate: templateId,
+        },
+    };
+}
+
 /**
  * Copy the customer-facing estimate into an invoice draft.
  * Does not change the estimate. Internal notes are not copied.

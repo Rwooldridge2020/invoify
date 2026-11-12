@@ -35,7 +35,9 @@ import {
     type EstimateDocument,
     type EstimateLine,
 } from "@/lib/estimate/schema";
-import { estimateToInvoice } from "@/lib/estimate/toInvoice";
+import { estimateAsInvoice, estimateToInvoice } from "@/lib/estimate/toInvoice";
+import { TEMPLATES } from "@/app/components/templates/invoice-pdf/registry";
+import DynamicInvoiceTemplate from "@/app/components/templates/invoice-pdf/DynamicInvoiceTemplate";
 import { toCustomerView } from "@/lib/estimate/view";
 import { buildBackup, mergeBackup, parseBackup } from "@/lib/backup";
 import { documentFileName } from "@/lib/downloadName";
@@ -521,9 +523,17 @@ export default function EstimateWorkspace() {
     }
 
     const locked = doc.status === "issued";
+    const templateId = doc.pdfTemplate || 1;
     const preview = customerEstimateHtml(
         toCustomerView(doc, doc.logoDataUrl || LOGO_SRC)
     );
+    const templateOptions = [
+        { id: 1, name: "Estimate" },
+        ...TEMPLATES.filter((template) => template.id !== 1).map((template) => ({
+            id: template.id,
+            name: template.name,
+        })),
+    ];
 
     return (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -1199,15 +1209,51 @@ export default function EstimateWorkspace() {
             </div>
 
             <div className="min-w-0 overflow-x-auto" data-allow-x-overflow>
-                <h2 className="mb-2 text-sm font-medium">
-                    Customer PDF preview
-                </h2>
-                <iframe
-                    title="Customer PDF preview"
-                    data-testid="customer-preview"
-                    className="h-[1100px] w-[816px] max-w-none border bg-white"
-                    srcDoc={preview}
-                />
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <h2 className="text-sm font-medium">Customer PDF preview</h2>
+                    <label className="flex items-center gap-2 text-sm">
+                        Template
+                        <select
+                            aria-label="PDF template"
+                            className={field + " mt-0"}
+                            value={templateId}
+                            disabled={locked}
+                            onChange={(event) =>
+                                update({
+                                    pdfTemplate: Number(event.target.value),
+                                })
+                            }
+                        >
+                            {templateOptions.map((template) => (
+                                <option key={template.id} value={template.id}>
+                                    {template.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+                {templateId === 1 ? (
+                    <iframe
+                        title="Customer PDF preview"
+                        data-testid="customer-preview"
+                        className="h-[1100px] w-[816px] max-w-none border bg-white"
+                        srcDoc={preview}
+                    />
+                ) : (
+                    <div
+                        data-testid="template-preview"
+                        className="h-[1100px] w-[816px] overflow-auto border bg-white"
+                    >
+                        <DynamicInvoiceTemplate
+                            {...estimateAsInvoice(
+                                doc,
+                                templateId,
+                                doc.logoDataUrl || LOGO_SRC
+                            )}
+                            locale={locale}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -40,6 +40,8 @@ This repository is a fork of [Invoify](https://github.com/al1abb/invoify) by Ali
 
 A walkthrough of the invoice builder is on the guide page when you run the app (`/en/guide`).
 
+An exported estimate job file is JSON with `"kind": "rwg-estimate"`. `estimate.pdfTemplate` is optional. Leave it out, or set it to `1`, for the current letter layout. `2` through `13` use the invoice layouts, in the same order as the invoice picker: Modern, Sidebar, Bold Header, Minimal, Letterhead, Compact, Two-Tone, Bordered, Left Rail, Statement, Corner, and Column. Older files with no `pdfTemplate` still import as template 1.
+
 ## Your data stays in your browser
 
 The app has no accounts and no database. Everything you enter (the address book, the autosave draft, saved invoices, and saved estimates) is stored locally, and it is encrypted at rest with AES-GCM 256 under a key the browser generates as non-extractable, so the key cannot be copied out of the origin.
