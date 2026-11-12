@@ -65,6 +65,13 @@ export default defineConfig({
         env: {
             ...process.env,
             APP_PASSWORD,
+            /*
+             * The smoke suite issues more invoice PDF POSTs than production's
+             * default 30/hour cap (glyph/rtl checks plus desktop and mobile
+             * projects on one IP). Production keeps the default; only this test
+             * server sees a higher limit.
+             */
+            PDF_GENERATION_LIMIT: "80",
         },
         // A cold build plus a Chromium launch is slow on a cold cache.
         timeout: 5 * 60 * 1000,

@@ -223,7 +223,11 @@ test.describe("invoice builder", () => {
         collectProblems(page, problems);
 
         await page.goto("/en");
-        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        /*
+         * The page's h1 lives inside the closed homepage about <details> (see
+         * "the homepage about section starts closed and opens" below). This
+         * tripwire only needs the builder shell to have rendered.
+         */
         await expect(page.locator('input[name="sender.name"]')).toBeVisible();
 
         // Give any render loop a chance to announce itself.
