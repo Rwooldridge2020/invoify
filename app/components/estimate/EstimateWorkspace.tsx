@@ -35,7 +35,9 @@ import {
     type EstimateDocument,
     type EstimateLine,
 } from "@/lib/estimate/schema";
-import { estimateToInvoice } from "@/lib/estimate/toInvoice";
+import { estimateAsInvoice, estimateToInvoice } from "@/lib/estimate/toInvoice";
+import { TEMPLATES } from "@/app/components/templates/invoice-pdf/registry";
+import DynamicInvoiceTemplate from "@/app/components/templates/invoice-pdf/DynamicInvoiceTemplate";
 import { toCustomerView } from "@/lib/estimate/view";
 import { buildBackup, mergeBackup, parseBackup } from "@/lib/backup";
 import BaseButton from "@/app/components/reusables/BaseButton";
@@ -523,9 +525,17 @@ export default function EstimateWorkspace() {
     }
 
     const locked = doc.status === "issued";
+    const templateId = doc.pdfTemplate || 1;
     const preview = customerEstimateHtml(
         toCustomerView(doc, doc.logoDataUrl || LOGO_SRC)
     );
+    const templateOptions = [
+        { id: 1, name: "Estimate" },
+        ...TEMPLATES.filter((template) => template.id !== 1).map((template) => ({
+            id: template.id,
+            name: template.name,
+        })),
+    ];
 
     return (
         <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:gap-12 shell:h-[calc(100dvh-4rem)] shell:grid-cols-[minmax(0,34fr)_minmax(0,66fr)] shell:items-stretch shell:gap-0 shell:overflow-hidden">
@@ -1205,14 +1215,52 @@ export default function EstimateWorkspace() {
 
             <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:bg-ground" data-allow-x-overflow>
                 <div className="shell:min-h-0 shell:flex-1 shell:overflow-y-auto shell:px-8 shell:py-5">
-                    <Subheading className="mb-3">Live Preview</Subheading>
+                    <div className="mb-3 flex flex-wrap items-center gap-3">
+                        <Subheading>Live Preview</Subheading>
+                        <label className="flex items-center gap-2 text-sm">
+                            Template
+                            <select
+                                aria-label="PDF template"
+                                className="h-9 rounded-full border border-input bg-background px-3 text-sm"
+                                value={templateId}
+                                disabled={locked}
+                                onChange={(event) =>
+                                    update({
+                                        pdfTemplate: Number(event.target.value),
+                                    })
+                                }
+                            >
+                                {templateOptions.map((template) => (
+                                    <option key={template.id} value={template.id}>
+                                        {template.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
                     <div className="overflow-hidden rounded-xl border border-border bg-white shell:mx-auto shell:w-full shell:max-w-[46rem] shell:border-black/5 shell:shadow-elevated">
-                        <iframe
-                            title="Customer PDF preview"
-                            data-testid="customer-preview"
-                            className="h-[1100px] w-full max-w-none border-0 bg-white"
-                            srcDoc={preview}
-                        />
+                        {templateId === 1 ? (
+                            <iframe
+                                title="Customer PDF preview"
+                                data-testid="customer-preview"
+                                className="h-[1100px] w-full max-w-none border-0 bg-white"
+                                srcDoc={preview}
+                            />
+                        ) : (
+                            <div
+                                data-testid="template-preview"
+                                className="h-[1100px] overflow-auto bg-white"
+                            >
+                                <DynamicInvoiceTemplate
+                                    {...estimateAsInvoice(
+                                        doc,
+                                        templateId,
+                                        doc.logoDataUrl || LOGO_SRC
+                                    )}
+                                    locale={locale}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

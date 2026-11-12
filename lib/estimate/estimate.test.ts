@@ -402,6 +402,30 @@ describe("job file", () => {
             "SYNTHETIC-LONG-END"
         );
         assert.equal(parsed.file.kind, "rwg-estimate");
+        assert.equal(parsed.file.estimate.pdfTemplate, 1);
+    });
+
+    it("defaults a job file that has no template to the current letter", () => {
+        const file = toJobFile(quote(), NOW);
+        const raw = JSON.parse(JSON.stringify(file)) as {
+            estimate: { pdfTemplate?: number };
+        };
+        delete raw.estimate.pdfTemplate;
+        const parsed = parseJobFile(JSON.stringify(raw));
+        assert.equal(parsed.ok, true);
+        if (!parsed.ok) return;
+        assert.equal(parsed.file.estimate.pdfTemplate, 1);
+
+        const chosen = toJobFile({ ...quote(), pdfTemplate: 4 }, NOW);
+        const kept = parseJobFile(JSON.stringify(chosen));
+        assert.equal(kept.ok, true);
+        if (!kept.ok) return;
+        assert.equal(kept.file.estimate.pdfTemplate, 4);
+
+        const rejected = parseJobFile(
+            JSON.stringify({ ...chosen, estimate: { ...chosen.estimate, pdfTemplate: 99 } })
+        );
+        assert.equal(rejected.ok, false);
     });
 
     it("rejects bad, unsupported, and oversized files", () => {
