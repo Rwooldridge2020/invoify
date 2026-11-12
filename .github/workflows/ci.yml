@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm run test:unit
+
       # Only Chromium: both Playwright projects use it, so pulling Firefox and
       # WebKit would add minutes per run for browsers nothing here targets.
       - name: Install Playwright browser
