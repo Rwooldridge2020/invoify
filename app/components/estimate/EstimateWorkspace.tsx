@@ -37,7 +37,9 @@ import {
 } from "@/lib/estimate/schema";
 import { estimateToInvoice } from "@/lib/estimate/toInvoice";
 import { toCustomerView } from "@/lib/estimate/view";
+import { buildBackup, mergeBackup, parseBackup } from "@/lib/backup";
 import { documentFileName } from "@/lib/downloadName";
+import { partyStorageKey } from "@/lib/partyStore";
 import { nextInvoiceNumber } from "@/lib/invoiceNumber";
 import { readSecure, writeSecure } from "@/lib/secureStore";
 import { LOCAL_STORAGE_INVOICE_DRAFT_KEY } from "@/lib/variables";
@@ -80,6 +82,7 @@ export default function EstimateWorkspace() {
     const [pdfBusy, setPdfBusy] = useState(false);
     const preserved = useRef<unknown[]>([]);
     const fileRef = useRef<HTMLInputElement>(null);
+    const backupRef = useRef<HTMLInputElement>(null);
     // A draft that fails validation stays in storage. Autosave must not
     // replace it with the blank estimate opened in its place.
     const blockDraftWrite = useRef(false);
@@ -300,6 +303,62 @@ export default function EstimateWorkspace() {
                 "json"
             )
         );
+    }
+
+    async function readBackup() {
+        const [estimates, invoices, senders, clients] = await Promise.all([
+            readSecure<unknown>(LIBRARY_KEY),
+            readSecure<unknown>("savedInvoices"),
+            readSecure<unknown>(partyStorageKey("sender")),
+            readSecure<unknown>(partyStorageKey("receiver")),
+        ]);
+        return buildBackup({ estimates, invoices, senders, clients });
+    }
+
+    async function exportAll() {
+        const backup = await readBackup();
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {
+            type: "application/json",
+        });
+        downloadBlob(blob, "RWG_Backup.json");
+    }
+
+    async function importAll(file: File) {
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(await file.text());
+        } catch {
+            setError("That backup file is not JSON.");
+            return;
+        }
+        const incoming = parseBackup(parsed);
+        if (!incoming) {
+            setError("That file is not an RW Grading backup.");
+            return;
+        }
+        const merged = mergeBackup(await readBackup(), incoming);
+        const saved = await Promise.all([
+            writeSecure(LIBRARY_KEY, merged.estimates),
+            writeSecure("savedInvoices", merged.invoices),
+            writeSecure(partyStorageKey("sender"), merged.senders),
+            writeSecure(partyStorageKey("receiver"), merged.clients),
+        ]);
+        if (saved.some((ok) => !ok)) {
+            setError("The backup could not be saved in this browser.");
+            return;
+        }
+        const parsedLibrary = parseLibrary(merged.estimates);
+        preserved.current = parsedLibrary.preserved;
+        setLibrary(parsedLibrary.documents);
+        setDoc((open) => {
+            if (!open) return open;
+            const replacement = parsedLibrary.documents.find(
+                (row) => row.id === open.id
+            );
+            return replacement ? recalculate(replacement) : open;
+        });
+        setError("");
+        setNotice("Backup imported.");
     }
 
     async function onImport(file: File) {
@@ -542,6 +601,20 @@ export default function EstimateWorkspace() {
                     <button
                         type="button"
                         className={btn}
+                        onClick={() => void exportAll()}
+                    >
+                        Export all jobs
+                    </button>
+                    <button
+                        type="button"
+                        className={btn}
+                        onClick={() => backupRef.current?.click()}
+                    >
+                        Import all
+                    </button>
+                    <button
+                        type="button"
+                        className={btn}
                         onClick={() => void downloadPdf()}
                         disabled={pdfBusy}
                     >
@@ -563,6 +636,18 @@ export default function EstimateWorkspace() {
                         onChange={(event) => {
                             const file = event.target.files?.[0];
                             if (file) void onImport(file);
+                            event.target.value = "";
+                        }}
+                    />
+                    <input
+                        ref={backupRef}
+                        type="file"
+                        accept="application/json,.json"
+                        className="hidden"
+                        aria-label="Import all jobs"
+                        onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) void importAll(file);
                             event.target.value = "";
                         }}
                     />
