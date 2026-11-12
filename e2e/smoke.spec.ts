@@ -789,7 +789,12 @@ test.describe("invoice builder", () => {
 
         const faq = blocks.find((b) => b["@type"] === "FAQPage");
         const rendered = (enHtml.match(/<summary[\s>]/g) ?? []).length;
-        expect(faq.mainEntity.length).toBe(rendered);
+        // The section itself is one closed <details>; each question is another.
+        expect(rendered).toBe(faq.mainEntity.length + 1);
+        expect(enHtml).toContain("About RW Grading Estimates &amp; FAQ");
+        expect(enHtml).toMatch(
+            /<details>\s*<summary[^>]*>About RW Grading Estimates &amp; FAQ<\/summary>/
+        );
 
         // There is prose on the page at all.
         const text = enHtml
@@ -1238,6 +1243,19 @@ test.describe("invoice builder", () => {
                 .trim().length;
         expect(prose(homeHtml)).toBeGreaterThan(1200);
         expect(prose(guideHtml)).toBeGreaterThan(1200);
+    });
+
+    test("the homepage about section starts closed and opens", async ({ page }) => {
+        await page.goto("/en");
+        const section = page.locator("section.border-t.bg-card");
+        const toggle = section.getByText("About RW Grading Estimates & FAQ");
+        await toggle.scrollIntoViewIfNeeded();
+        const outer = section.locator("details").first();
+        await expect.poll(async () => outer.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+        await expect(section.getByRole("heading", { name: "RW Grading Estimates" })).toBeHidden();
+        await toggle.click();
+        await expect(section.getByRole("heading", { name: "RW Grading Estimates" })).toBeVisible();
+        await expect(section.getByRole("heading", { name: "Questions" })).toBeVisible();
     });
 
     test("warm endpoint reports the renderer is ready", async ({ request }) => {
