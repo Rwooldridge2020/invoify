@@ -1077,10 +1077,8 @@ test.describe("invoice builder", () => {
 
     test("rtl PDFs embed their script fonts", async ({ request }) => {
         /*
-         * The default invoice uses the estimate letterhead face (Arial). Where
-         * Arial is absent, the stack falls through to the embedded Noto
-         * subsets. Where the machine aliases Arial to Arimo, that face already
-         * covers Hebrew and Arabic, so Noto is not selected.
+         * The default invoice letterhead stacks the embedded IBM Plex and Noto
+         * subsets so script and latin-ext glyphs never depend on a host font.
          */
         const CASES: [string, string][] = [
             ["he", "סטודיו נורת׳ווינד"],
