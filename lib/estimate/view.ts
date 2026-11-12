@@ -1,3 +1,4 @@
+import { letterheadLines } from "./letterhead";
 import { formatQuantity } from "./money";
 import type { EstimateDocument } from "./schema";
 
@@ -38,14 +39,7 @@ function cityLine(party: {
 }
 
 export function senderLines(sender: EstimateDocument["sender"]): string[] {
-    return [
-        sender.name,
-        sender.address,
-        cityLine(sender),
-        sender.email,
-        sender.phone,
-        sender.website,
-    ].filter((line) => line.trim() !== "");
+    return letterheadLines(sender);
 }
 
 export function customerLines(

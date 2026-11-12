@@ -65,11 +65,16 @@ export default function TemplateFrame({
     ctx,
     children,
     bare = false,
+    fontFamily,
+    color,
 }: {
     ctx: PartCtx;
     children: ReactNode;
     /** Skips the page padding, for layouts that paint edge-to-edge. */
     bare?: boolean;
+    /** Overrides the theme typeface. The default invoice uses the estimate letterhead. */
+    fontFamily?: string;
+    color?: string;
 }) {
     const { theme, scale, dir } = ctx;
 
@@ -78,7 +83,10 @@ export default function TemplateFrame({
             // The PDF is standalone HTML with no surrounding document to
             // inherit direction from, so the sheet declares its own.
             dir={dir}
-            style={{ fontFamily: fontStack(theme.fontId), color: "#111827" }}
+            style={{
+                fontFamily: fontFamily ?? fontStack(theme.fontId),
+                color: color ?? "#111827",
+            }}
         >
             <div
                 /*

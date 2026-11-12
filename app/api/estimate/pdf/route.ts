@@ -1,8 +1,6 @@
-import { readFile } from "fs/promises";
-import path from "path";
-
 import { NextRequest, NextResponse } from "next/server";
 
+import { defaultLogoDataUrl } from "@/lib/estimate/defaultLogo";
 import { customerEstimateHtml } from "@/lib/estimate/html";
 import { estimateSchema, type EstimateDocument } from "@/lib/estimate/schema";
 import { toCustomerView } from "@/lib/estimate/view";
@@ -14,22 +12,13 @@ export const runtime = "nodejs";
 
 const LETTER = { width: 816, height: 1056, deviceScaleFactor: 1 };
 
-async function defaultLogo(): Promise<string> {
-    const file = path.join(
-        process.cwd(),
-        "public/assets/img/rw-grading-logo.png"
-    );
-    const bytes = await readFile(file);
-    return `data:image/png;base64,${bytes.toString("base64")}`;
-}
-
 export async function POST(req: NextRequest) {
     const parsed = await parseJsonBody(req, estimateSchema);
     if (!parsed.ok) return parsed.response;
 
     const doc = parsed.data as EstimateDocument;
     try {
-        const logo = doc.logoDataUrl || (await defaultLogo());
+        const logo = doc.logoDataUrl || (await defaultLogoDataUrl());
         const html = customerEstimateHtml(toCustomerView(doc, logo));
         const pdf = await withPdfPage(async (page) => {
             const previous = page.viewport();

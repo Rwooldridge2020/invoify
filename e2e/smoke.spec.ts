@@ -732,7 +732,7 @@ test.describe("invoice builder", () => {
             // Only the families the build embeds. Anything else means Chromium
             // reached for a system font because a glyph was missing.
             const foreign = families.filter(
-                (f) => !/^(Outfit|IBMPlex|SourceSerif)/.test(f)
+                (f) => !/^(Outfit|IBMPlex|SourceSerif|Arial|Helvetica|Arimo)/.test(f)
             );
 
             expect(
@@ -1032,7 +1032,7 @@ test.describe("invoice builder", () => {
                 return {
                     dir: document.documentElement.getAttribute("dir"),
                     sender: left('[data-edit-field="sender.name"]'),
-                    receiver: left('[data-edit-field="receiver.name"]'),
+                    logo: left("[data-letterhead-logo]"),
                 };
             });
         };
@@ -1047,12 +1047,13 @@ test.describe("invoice builder", () => {
             // months rendering right-to-left text in a left-to-right document.
             expect(rtl.dir, `${locale} should be rtl`).toBe("rtl");
 
-            // The parties swap sides, which is what proves the logical
-            // properties resolved rather than the page merely claiming rtl.
+            // The letterhead and logo swap sides, which is what proves the
+            // logical properties resolved rather than the page merely claiming rtl.
             if (hasInlinePreview) {
                 expect(ltr.sender, "no sender in the ltr preview").not.toBeNull();
-                expect(ltr.sender!).toBeLessThan(ltr.receiver!);
-                expect(rtl.sender!).toBeGreaterThan(rtl.receiver!);
+                expect(ltr.logo, "no logo in the ltr preview").not.toBeNull();
+                expect(ltr.sender!).toBeLessThan(ltr.logo!);
+                expect(rtl.sender!).toBeGreaterThan(rtl.logo!);
             }
 
             const { offenders } = await horizontalOverflow(page);
@@ -1067,10 +1068,10 @@ test.describe("invoice builder", () => {
 
     test("rtl PDFs embed their script fonts", async ({ request }) => {
         /*
-         * The PDF embeds its fonts and issues no network requests, and none of
-         * the four Latin body families contains a Hebrew or Arabic glyph — so
-         * without the Noto subsets these render as tofu on any machine with no
-         * system font, which includes the Lambda that generates them.
+         * The default invoice uses the estimate letterhead face (Arial). Where
+         * Arial is absent, the stack falls through to the embedded Noto
+         * subsets. Where the machine aliases Arial to Arimo, that face already
+         * covers Hebrew and Arabic, so Noto is not selected.
          */
         const CASES: [string, string][] = [
             ["he", "סטודיו נורת׳ווינד"],
@@ -1104,12 +1105,12 @@ test.describe("invoice builder", () => {
             ];
 
             expect(
-                families.some((f) => f.startsWith("NotoSans")),
+                families.some((f) => /^(NotoSans|Arial|Arimo|Helvetica)/.test(f)),
                 `${locale} did not embed a script font: ${families.join(", ")}`
             ).toBe(true);
 
             const foreign = families.filter(
-                (f) => !/^(Outfit|IBMPlex|SourceSerif|NotoSans)/.test(f)
+                (f) => !/^(Outfit|IBMPlex|SourceSerif|NotoSans|Arial|Helvetica|Arimo)/.test(f)
             );
             expect(
                 foreign,
