@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/** Matches the webServer env so production fail-closed auth does not 401 the suite. */
+const APP_PASSWORD = process.env.APP_PASSWORD || "playwright-app-password";
+const AUTHORIZATION = `Basic ${Buffer.from(`playwright:${APP_PASSWORD}`).toString("base64")}`;
+
 /**
  * Smoke-test configuration.
  *
@@ -23,6 +27,9 @@ export default defineConfig({
     use: {
         baseURL: "http://127.0.0.1:3000",
         trace: "on-first-retry",
+        extraHTTPHeaders: {
+            Authorization: AUTHORIZATION,
+        },
     },
 
     projects: [
@@ -55,6 +62,10 @@ export default defineConfig({
         command: "npm run build && npm run start",
         url: "http://127.0.0.1:3000/en",
         reuseExistingServer: !process.env.CI,
+        env: {
+            ...process.env,
+            APP_PASSWORD,
+        },
         // A cold build plus a Chromium launch is slow on a cold cache.
         timeout: 5 * 60 * 1000,
         stdout: "pipe",

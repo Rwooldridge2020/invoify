@@ -144,6 +144,7 @@ export function PartyBlock({
     heading,
     align = "left",
     field,
+    letter = false,
 }: {
     ctx: PartCtx;
     party: InvoiceType["sender"] | InvoiceType["receiver"];
@@ -151,6 +152,8 @@ export function PartyBlock({
     align?: "left" | "right";
     /** Which party this is, for click-to-edit. */
     field?: "sender" | "receiver";
+    /** Bold black heading, matching the estimate address label. */
+    letter?: boolean;
 }) {
     const { scale, locale } = ctx;
     return (
@@ -160,7 +163,9 @@ export function PartyBlock({
         >
             {heading && (
                 <p
-                    className={`${scale.label} font-semibold uppercase tracking-wider text-gray-500`}
+                    className={`${scale.label} font-semibold uppercase tracking-wider ${
+                        letter ? "text-black" : "text-gray-500"
+                    }`}
                 >
                     {heading}
                 </p>
@@ -204,9 +209,12 @@ export function PartyBlock({
 export function DocumentMeta({
     ctx,
     align = "right",
+    letter = false,
 }: {
     ctx: PartCtx;
     align?: "left" | "right";
+    /** Bold black labels, matching the estimate meta block. */
+    letter?: boolean;
 }) {
     const { data, labels, scale, locale } = ctx;
     const { details } = data;
@@ -227,7 +235,16 @@ export function DocumentMeta({
                         align === "right" ? "justify-end" : ""
                     }`}
                 >
-                    <span className="font-medium text-gray-500">{label}:</span>
+                    <span
+                        className={
+                            letter
+                                ? "font-bold text-black"
+                                : "font-medium text-gray-500"
+                        }
+                    >
+                        {label}
+                        {letter ? "" : ":"}
+                    </span>
                     <span className="tabular-nums text-gray-900">{value}</span>
                 </div>
             ))}
@@ -241,22 +258,26 @@ export type ItemsTableProps = {
     ctx: PartCtx;
     /** Fills the header row with the accent instead of a hairline rule. */
     variant?: "rule" | "filled" | "plain";
+    /** Gray header band from the shared letterhead, instead of the accent. */
+    headerBg?: string;
 };
 
-export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
+export function ItemsTable({ ctx, variant = "rule", headerBg }: ItemsTableProps) {
     const { data, labels, theme, scale, locale } = ctx;
     const { details } = data;
 
-    const headFilled = variant === "filled";
+    const headFilled = variant === "filled" || Boolean(headerBg);
 
     return (
         <table className="w-full border-collapse">
             <thead>
                 <tr
                     style={
-                        headFilled
-                            ? { backgroundColor: theme.accentColor }
-                            : undefined
+                        headerBg
+                            ? { backgroundColor: headerBg }
+                            : headFilled
+                              ? { backgroundColor: theme.accentColor }
+                              : undefined
                     }
                 >
                     {[labels.item, labels.qty, labels.rate, labels.amount].map(
@@ -273,9 +294,11 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                                         : "",
                                 ].join(" ")}
                                 style={
-                                    headFilled
-                                        ? { color: "#ffffff" }
-                                        : { color: theme.accentColor }
+                                    headerBg
+                                        ? { color: "#222" }
+                                        : headFilled
+                                          ? { color: "#ffffff" }
+                                          : { color: theme.accentColor }
                                 }
                             >
                                 {h}
@@ -299,7 +322,7 @@ export function ItemsTable({ ctx, variant = "rule" }: ItemsTableProps) {
                     >
                         <td className={`${scale.rowY} ${headFilled ? "px-2" : ""} align-top`}>
                             <p
-                                className={`${scale.body} font-medium text-gray-900`}
+                                className={`${scale.body} ${headerBg ? "font-bold" : "font-medium"} text-gray-900`}
                             >
                                 {item.name}
                             </p>
