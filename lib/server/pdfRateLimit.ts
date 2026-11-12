@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getClientKey, rateLimit } from "./rateLimit";
 
 /** Per client, per endpoint, per hour. Stays under the mail limit's 5/hour. */
-const PDF_LIMIT = 30;
+const PDF_LIMIT = (() => {
+    const fromEnv = Number(process.env.PDF_GENERATION_LIMIT);
+    return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : 30;
+})();
 const PDF_WINDOW_MS = 60 * 60 * 1000;
 
 /**

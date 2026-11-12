@@ -4,10 +4,11 @@
  */
 
 export const RW_LETTERHEAD = {
-    // Arial first, then the faces the invoice PDF already embeds, so a missing
-    // glyph (Hebrew, Arabic, Azerbaijani schwa) still has a shipped font.
+    // Only faces the PDF build embeds. Leading with Arial/Helvetica made Linux
+    // CI pick Liberation (an Arial alias) and embed that instead of Noto for
+    // Hebrew, Arabic, and latin-ext text.
     fontFamily:
-        "Arial, Helvetica, 'IBM Plex Sans', 'Noto Sans Hebrew', 'Noto Sans Arabic', sans-serif",
+        "'IBM Plex Sans', 'Noto Sans Hebrew', 'Noto Sans Arabic', sans-serif",
     text: "#222",
     title: "#6d6d6d",
     titleSize: "26pt",

@@ -223,7 +223,11 @@ test.describe("invoice builder", () => {
         collectProblems(page, problems);
 
         await page.goto("/en");
-        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        /*
+         * The page's h1 lives inside the closed homepage about <details> (see
+         * "the homepage about section starts closed and opens" below). This
+         * tripwire only needs the builder shell to have rendered.
+         */
         await expect(page.locator('input[name="sender.name"]')).toBeVisible();
 
         // Give any render loop a chance to announce itself.
@@ -1073,10 +1077,8 @@ test.describe("invoice builder", () => {
 
     test("rtl PDFs embed their script fonts", async ({ request }) => {
         /*
-         * The default invoice uses the estimate letterhead face (Arial). Where
-         * Arial is absent, the stack falls through to the embedded Noto
-         * subsets. Where the machine aliases Arial to Arimo, that face already
-         * covers Hebrew and Arabic, so Noto is not selected.
+         * The default invoice letterhead stacks the embedded IBM Plex and Noto
+         * subsets so script and latin-ext glyphs never depend on a host font.
          */
         const CASES: [string, string][] = [
             ["he", "סטודיו נורת׳ווינד"],
