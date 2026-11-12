@@ -8,6 +8,7 @@ import { estimateSchema, type EstimateDocument } from "@/lib/estimate/schema";
 import { toCustomerView } from "@/lib/estimate/view";
 import { parseJsonBody } from "@/lib/server/validateRequest";
 import { documentFileName } from "@/lib/downloadName";
+import { pdfGenerationLimit } from "@/lib/server/pdfRateLimit";
 import { withPdfPage } from "@/services/invoice/server/pdfPage";
 
 export const runtime = "nodejs";
@@ -24,6 +25,9 @@ async function defaultLogo(): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+    const limited = pdfGenerationLimit(req, "estimate-pdf");
+    if (limited) return limited;
+
     const parsed = await parseJsonBody(req, estimateSchema);
     if (!parsed.ok) return parsed.response;
 
