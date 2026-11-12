@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { chromium } from "playwright";
 
 /** Matches the webServer env so production fail-closed auth does not 401 the suite. */
 const APP_PASSWORD = process.env.APP_PASSWORD || "playwright-app-password";
@@ -72,6 +73,14 @@ export default defineConfig({
              * server sees a higher limit.
              */
             PDF_GENERATION_LIMIT: "80",
+            /*
+             * GitHub Actions installs this browser (`playwright install
+             * --with-deps chromium`). Puppeteer's bundled Chromium lacks those
+             * system libraries and tends to substitute Liberation fonts into
+             * PDFs instead of the embedded @fontsource subsets the smoke tests
+             * assert on.
+             */
+            PUPPETEER_EXECUTABLE_PATH: chromium.executablePath(),
         },
         // A cold build plus a Chromium launch is slow on a cold cache.
         timeout: 5 * 60 * 1000,
