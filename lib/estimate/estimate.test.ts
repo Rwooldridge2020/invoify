@@ -615,4 +615,38 @@ describe("convert to invoice", () => {
         assert.equal(invoice.sender.name, "RW Grading LLC");
         assert.equal(invoice.receiver.name, "SYNTHETIC Customer");
     });
+
+    it("copies a non-blank job site onto the receiver", () => {
+        const doc = recalculate({
+            ...quote(),
+            customer: {
+                ...quote().customer,
+                name: "SYNTHETIC Customer",
+                jobSite: "  100 Synthetic Site Rd  ",
+            },
+        });
+        const invoice = estimateToInvoice(doc, {
+            invoiceNumber: "INV0010",
+            invoiceDate: "2026-11-10T17:00:00.000Z",
+        });
+        assert.deepEqual(
+            invoice.receiver.customInputs.find((row) => row.key === "Job Site"),
+            { key: "Job Site", value: "100 Synthetic Site Rd" }
+        );
+
+        const blank = estimateToInvoice(
+            recalculate({
+                ...quote(),
+                customer: { ...quote().customer, jobSite: "   " },
+            }),
+            {
+                invoiceNumber: "INV0011",
+                invoiceDate: "2026-11-10T17:00:00.000Z",
+            }
+        );
+        assert.equal(
+            blank.receiver.customInputs.some((row) => row.key === "Job Site"),
+            false
+        );
+    });
 });

@@ -15,11 +15,11 @@ export const ENV = process.env.NODE_ENV;
  *
  * Read from the environment so a preview deployment or a future custom domain
  * does not need a code change — and, more importantly, so those deployments
- * stop advertising the production URL as their canonical. Falls back to the
- * current production host. No trailing slash.
+ * stop advertising another host as their canonical. Falls back to local
+ * development. No trailing slash. Set NEXT_PUBLIC_SITE_URL for a real host.
  */
 export const BASE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://invoify.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
 export const AUTHOR_WEBSITE = "https://aliabb.vercel.app";
 export const AUTHOR_GITHUB = "https://github.com/al1abb";

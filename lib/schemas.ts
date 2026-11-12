@@ -24,37 +24,20 @@ const imageDataUrl = z
 // TODO: Refactor some of the validators. Ex: name and zipCode or address and country have same rules
 // Field Validators
 const fieldValidators = {
-    name: z
-        .string()
-        .min(2, { message: "Must be at least 2 characters" })
-        .max(50, { message: "Must be at most 50 characters" }),
-    address: z
-        .string()
-        .min(2, { message: "Must be at least 2 characters" })
-        .max(70, { message: "Must be between 2 and 70 characters" }),
-    zipCode: z
-        .string()
-        .min(2, { message: "Must be between 2 and 20 characters" })
-        .max(20, { message: "Must be between 2 and 20 characters" }),
-    city: z
-        .string()
-        .min(1, { message: "Must be between 1 and 50 characters" })
-        .max(50, { message: "Must be between 1 and 50 characters" }),
-    country: z
-        .string()
-        .min(1, { message: "Must be between 1 and 70 characters" })
-        .max(70, { message: "Must be between 1 and 70 characters" }),
+    // Lengths match the estimate party schema so a converted job still validates.
+    name: z.string().max(200, { message: "Must be at most 200 characters" }),
+    address: z.string().max(300, { message: "Must be at most 300 characters" }),
+    zipCode: z.string().max(20, { message: "Must be at most 20 characters" }),
+    city: z.string().max(120, { message: "Must be at most 120 characters" }),
+    country: z.string().max(120, { message: "Must be at most 120 characters" }),
     email: z
         .string()
-        .email({ message: "Email must be a valid email" })
-        .min(5, { message: "Must be between 5 and 30 characters" })
-        .max(30, { message: "Must be between 5 and 30 characters" }),
-    phone: z
-        .string()
-        .min(1, { message: "Must be between 1 and 50 characters" })
-        .max(50, {
-            message: "Must be between 1 and 50 characters",
-        }),
+        .max(200, { message: "Must be at most 200 characters" })
+        .refine(
+            (value) => value === "" || z.string().email().safeParse(value).success,
+            { message: "Email must be a valid email" }
+        ),
+    phone: z.string().max(50, { message: "Must be at most 50 characters" }),
 
     /*
      * Dates.
