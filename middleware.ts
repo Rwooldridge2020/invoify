@@ -1,10 +1,32 @@
 import createMiddleware from "next-intl/middleware";
-import { routing } from "@/i18n/routing";
+import { NextRequest, NextResponse } from "next/server";
 
-export default createMiddleware(routing);
+import { routing } from "@/i18n/routing";
+import { appPasswordDecision } from "@/lib/server/appPassword";
+
+const handleI18n = createMiddleware(routing);
+
+export default function middleware(request: NextRequest) {
+    const decision = appPasswordDecision({
+        nodeEnv: process.env.NODE_ENV,
+        password: process.env.APP_PASSWORD,
+        authorization: request.headers.get("authorization"),
+    });
+    if (decision === "deny") {
+        return new NextResponse("Authentication required", {
+            status: 401,
+            headers: {
+                "WWW-Authenticate": 'Basic realm="RW Grading"',
+            },
+        });
+    }
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.next();
+    }
+    return handleI18n(request);
+}
 
 export const config = {
-    // Skip all paths that should not be internationalized. This example skips
-    // certain folders and all pathnames with a dot (e.g. favicon.ico)
-    matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+    // Pages and /api. Skip Next internals and files with an extension.
+    matcher: ["/((?!_next|_vercel|.*\\..*).*)"],
 };

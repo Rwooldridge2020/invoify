@@ -114,10 +114,11 @@ Follow these instructions to run RW Grading Estimates locally.
 
 ### Environment variables
 
-All of these are optional; the app runs without them, minus the features they enable.
+Mail settings are optional. `APP_PASSWORD` is optional in development and required in production.
 
 | Variable | Required for | Notes |
 | --- | --- | --- |
+| `APP_PASSWORD` | Opening the app in production | HTTP Basic password for every page and `/api` route. The username is ignored. When this is set, a missing or wrong password gets `401` with `WWW-Authenticate: Basic`. When it is unset, development stays open and production refuses every request. |
 | `NODEMAILER_EMAIL` | Sending invoices by email | The Gmail address that sends the mail. |
 | `NODEMAILER_PW` | Sending invoices by email | A [Gmail **App Password**](https://support.google.com/accounts/answer/185833), **not** your account password. Requires 2-Step Verification. |
 
