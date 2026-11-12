@@ -65,8 +65,7 @@ export default async function LandingContent({
 
     const isGuide = variant === "guide";
 
-    return (
-        <section className="border-t border-border bg-card">
+    const content = (
             <div className="container py-16 md:py-24">
                 <div className="mx-auto max-w-3xl">
                     {/*
@@ -162,6 +161,25 @@ export default async function LandingContent({
                 </div>
                 )}
             </div>
+    );
+
+    return (
+        <section className="border-t border-border bg-card">
+            {/*
+             * The homepage block starts closed. The heading, intro and FAQ
+             * stay in the HTML; a crawler still reads them, and the questions
+             * keep their own details elements.
+             */}
+            {isGuide ? (
+                content
+            ) : (
+                <details>
+                    <summary className="container cursor-pointer py-4 text-sm font-medium">
+                        About RW Grading Estimates & FAQ
+                    </summary>
+                    {content}
+                </details>
+            )}
 
             {/*
              * FAQPage structured data, built from the same array that renders

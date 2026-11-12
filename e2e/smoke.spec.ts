@@ -223,7 +223,11 @@ test.describe("invoice builder", () => {
         collectProblems(page, problems);
 
         await page.goto("/en");
-        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        /*
+         * The page's h1 lives inside the closed homepage about <details> (see
+         * "the homepage about section starts closed and opens" below). This
+         * tripwire only needs the builder shell to have rendered.
+         */
         await expect(page.locator('input[name="sender.name"]')).toBeVisible();
 
         // Give any render loop a chance to announce itself.
@@ -789,7 +793,12 @@ test.describe("invoice builder", () => {
 
         const faq = blocks.find((b) => b["@type"] === "FAQPage");
         const rendered = (enHtml.match(/<summary[\s>]/g) ?? []).length;
-        expect(faq.mainEntity.length).toBe(rendered);
+        // The section itself is one closed <details>; each question is another.
+        expect(rendered).toBe(faq.mainEntity.length + 1);
+        expect(enHtml).toContain("About RW Grading Estimates &amp; FAQ");
+        expect(enHtml).toMatch(
+            /<details>\s*<summary[^>]*>About RW Grading Estimates &amp; FAQ<\/summary>/
+        );
 
         // There is prose on the page at all.
         const text = enHtml
@@ -1068,10 +1077,8 @@ test.describe("invoice builder", () => {
 
     test("rtl PDFs embed their script fonts", async ({ request }) => {
         /*
-         * The default invoice uses the estimate letterhead face (Arial). Where
-         * Arial is absent, the stack falls through to the embedded Noto
-         * subsets. Where the machine aliases Arial to Arimo, that face already
-         * covers Hebrew and Arabic, so Noto is not selected.
+         * The default invoice letterhead stacks the embedded IBM Plex and Noto
+         * subsets so script and latin-ext glyphs never depend on a host font.
          */
         const CASES: [string, string][] = [
             ["he", "סטודיו נורת׳ווינד"],
@@ -1238,6 +1245,19 @@ test.describe("invoice builder", () => {
                 .trim().length;
         expect(prose(homeHtml)).toBeGreaterThan(1200);
         expect(prose(guideHtml)).toBeGreaterThan(1200);
+    });
+
+    test("the homepage about section starts closed and opens", async ({ page }) => {
+        await page.goto("/en");
+        const section = page.locator("section.border-t.bg-card");
+        const toggle = section.getByText("About RW Grading Estimates & FAQ");
+        await toggle.scrollIntoViewIfNeeded();
+        const outer = section.locator("details").first();
+        await expect.poll(async () => outer.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+        await expect(section.getByRole("heading", { name: "RW Grading Estimates" })).toBeHidden();
+        await toggle.click();
+        await expect(section.getByRole("heading", { name: "RW Grading Estimates" })).toBeVisible();
+        await expect(section.getByRole("heading", { name: "Questions" })).toBeVisible();
     });
 
     test("warm endpoint reports the renderer is ready", async ({ request }) => {

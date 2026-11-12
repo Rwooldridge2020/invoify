@@ -169,6 +169,8 @@ export const estimateSchema = z
         acceptedDate: optionalDate,
         signatureDataUrl: imageDataUrl,
         logoDataUrl: imageDataUrl,
+        // Omitted on job files saved before templates. 1 is the current letter.
+        pdfTemplate: z.number().int().min(1).max(13).default(1),
         ruleSnapshot: ruleSnapshotSchema,
         customerTotal: money,
         internalTotal: money,

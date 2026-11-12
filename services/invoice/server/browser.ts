@@ -48,9 +48,15 @@ async function launchBrowser(): Promise<Browser> {
     // Everywhere else — local dev, `next start`, a self-hosted server, CI —
     // use the full `puppeteer` package, which ships its own Chromium.
     const puppeteer = (await import("puppeteer")).default;
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     return puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+        ],
         headless: true,
+        ...(executablePath ? { executablePath } : {}),
     }) as unknown as Promise<Browser>;
 }
 

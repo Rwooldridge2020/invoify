@@ -116,6 +116,7 @@ export function createDocument(
         acceptedDate: "",
         signatureDataUrl: "",
         logoDataUrl: "",
+        pdfTemplate: 1,
         ruleSnapshot: rules,
         customerTotal: 0,
         internalTotal: 0,

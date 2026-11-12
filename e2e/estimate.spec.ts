@@ -179,6 +179,56 @@ test("estimate PDF is US Letter and a long description runs past one page", asyn
     expect(manyBody.toString("latin1")).not.toContain("INTERNAL-SECRET-NOTE");
 });
 
+test("each estimate template renders a PDF and the letter stays the default", async ({
+    page,
+    request,
+}, testInfo) => {
+    test.setTimeout(180_000);
+    const doc = createDocument(
+        SUGGESTED_CATALOG,
+        [],
+        "2026-11-05T15:00:00.000Z",
+        "2026-11-05"
+    );
+    const job = recalculate({
+        ...doc,
+        customer: { ...doc.customer, name: "SYNTHETIC Customer" },
+        internalNotes: "INTERNAL-SECRET-NOTE",
+        lines: [
+            createLine("labor", doc.ruleSnapshot, {
+                name: "SYNTHETIC labor",
+                quantity: 2,
+            }),
+        ],
+    });
+    // Once per run. The PDF route is limited per IP, and mobile repeats the suite.
+    if (testInfo.project.name === "desktop") {
+        for (let id = 1; id <= 13; id++) {
+            const response = await request.post("/api/estimate/pdf", {
+                data: { ...job, pdfTemplate: id },
+            });
+            expect(response.status(), `template ${id}`).toBe(200);
+            const body = await response.body();
+            expect(body.subarray(0, 5).toString()).toBe("%PDF-");
+            expect(body.toString("latin1")).not.toContain("INTERNAL-SECRET-NOTE");
+            if (id === 1) {
+                const info = pdfPages(body);
+                expect(info.count).toBeGreaterThan(0);
+                expect(info.boxes[0]).toContain("612");
+                expect(info.boxes[0]).toContain("792");
+            }
+        }
+    }
+
+    await page.goto("/en/estimate");
+    const picker = page.getByLabel("PDF template");
+    await expect(picker).toHaveValue("1");
+    await expect(picker.locator("option")).toHaveCount(13);
+    await expect(page.getByTestId("customer-preview")).toBeVisible();
+    await picker.selectOption("2");
+    await expect(page.getByTestId("template-preview")).toBeVisible();
+});
+
 test("fixed mobilization quantity stays editable and survives reload", async ({
     page,
 }) => {
