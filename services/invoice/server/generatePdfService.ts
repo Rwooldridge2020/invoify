@@ -13,6 +13,7 @@ import { getInvoiceTemplate } from "@/lib/helpers";
 // Variables
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/variables";
 import { documentFileName } from "@/lib/downloadName";
+import { defaultLogoDataUrl } from "@/lib/estimate/defaultLogo";
 
 /** Only known locales are accepted; anything else falls back to the default. */
 function resolveLocale(requested: string | null): string {
@@ -71,6 +72,18 @@ export async function generatePdfService(req: NextRequest) {
         const ReactDOMServer = (await import("react-dom/server")).default;
         const templateId = body.details.pdfTemplate;
         const InvoiceTemplate = await getInvoiceTemplate(templateId);
+        // The default template shares the estimate letterhead, including the
+        // repo logo when the invoice has not uploaded a different one.
+        const renderBody =
+            templateId === 1 && !body.details.invoiceLogo
+                ? {
+                      ...body,
+                      details: {
+                          ...body.details,
+                          invoiceLogo: await defaultLogoDataUrl(),
+                      },
+                  }
+                : body;
 
         if (!InvoiceTemplate) {
             return NextResponse.json(
@@ -90,7 +103,7 @@ export async function generatePdfService(req: NextRequest) {
 
         const htmlTemplate = ReactDOMServer.renderToStaticMarkup(
             React.createElement(InvoiceTemplate, {
-                ...body,
+                ...renderBody,
                 labels: buildInvoiceLabels(messages),
                 // Drives Intl number/currency formatting inside the document.
                 locale,
