@@ -674,3 +674,55 @@ describe("convert to invoice", () => {
         );
     });
 });
+
+describe("change order", () => {
+    it("imports older job files without change-order fields", () => {
+        const doc = quote();
+        const raw = JSON.stringify(toJobFile(doc, NOW));
+        const parsed = JSON.parse(raw) as {
+            estimate: Record<string, unknown>;
+        };
+        delete parsed.estimate.documentType;
+        delete parsed.estimate.originalEstimateNumber;
+        delete parsed.estimate.changeOrderNumber;
+        const file = parseJobFile(JSON.stringify(parsed));
+        assert.equal(file.ok, true);
+        if (!file.ok) return;
+        assert.equal(file.file.estimate.documentType, "estimate");
+        assert.equal(file.file.estimate.originalEstimateNumber, "");
+    });
+
+    it("renders change order letter pdf fields and negative net change", () => {
+        const doc = recalculate({
+            ...createDocument(SUGGESTED_CATALOG, [], NOW, DAY, {
+                documentType: "change-order",
+            }),
+            customer: {
+                ...quote().customer,
+                name: "SYNTHETIC Customer",
+            },
+            originalEstimateNumber: "2026-014",
+            changeOrderNumber: "CO-1",
+            estimateNumber: "2026-050",
+            lines: [
+                createLine("labor", SUGGESTED_CATALOG.rules, {
+                    name: "SYNTHETIC credit",
+                    quantity: -4,
+                }),
+            ],
+        });
+        assert.equal(doc.customerTotal, -100);
+        const html = customerEstimateHtml(
+            toCustomerView(doc, "/assets/img/rw-grading-logo.png")
+        );
+        assert.equal(html.includes("Change Order"), true);
+        assert.equal(html.includes("CHANGE ORDER #"), true);
+        assert.equal(html.includes("CO-1"), true);
+        assert.equal(html.includes("ORIGINAL ESTIMATE #"), true);
+        assert.equal(html.includes("2026-014"), true);
+        assert.equal(html.includes("NET CHANGE"), true);
+        assert.equal(html.includes("-$100.00"), true);
+        assert.equal(html.includes("EXPIRATION DATE"), false);
+        assert.equal(html.includes("Deposit to schedule"), false);
+    });
+});

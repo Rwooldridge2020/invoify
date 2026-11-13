@@ -15,6 +15,8 @@ import { isIsoDate } from "./dates";
 
 export const ESTIMATE_SCHEMA_VERSION = 1 as const;
 export const JOB_FILE_KIND = "rwg-estimate" as const;
+export const DOCUMENT_TYPES = ["estimate", "change-order"] as const;
+export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 export const MAX_JOB_FILE_BYTES = 4 * 1024 * 1024;
 export const SUGGESTED_EXCAVATOR_ID = "excavator-normal";
 
@@ -145,6 +147,12 @@ export const estimateSchema = z
         createdAt: z.string().min(10).max(40),
         updatedAt: z.string().min(10).max(40),
         estimateNumber: z.string().min(1).max(40),
+        // Omitted on older job files; they import as ordinary estimates.
+        documentType: z.enum(DOCUMENT_TYPES).default("estimate"),
+        /** Original estimate number this change order modifies. Blank on estimates. */
+        originalEstimateNumber: z.string().max(40).default(""),
+        /** Optional label (e.g. CO-2). Falls back to estimateNumber on the PDF. */
+        changeOrderNumber: z.string().max(40).default(""),
         // Blank while a draft is incomplete. A cleared date must still reload.
         estimateDate: optionalDate,
         validityDays: z.number().int().min(0).max(3650),

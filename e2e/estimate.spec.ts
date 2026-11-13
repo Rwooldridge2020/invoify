@@ -323,3 +323,66 @@ test("convert to invoice copies the total and leaves the estimate", async ({
     await expect(page.getByTestId("customer-total")).toHaveText(/\$100\.00/);
     await expect(page.getByLabel("Estimate number")).toHaveValue(estimateNumber);
 });
+
+test("change order pdf shows net change and original estimate", async ({
+    page,
+    request,
+}) => {
+    test.setTimeout(120_000);
+    await page.goto("/en/estimate");
+    await page.getByRole("button", { name: "New change order" }).click();
+    await page.getByRole("button", { name: "Start new" }).click();
+    await expect(page.getByLabel("Document type")).toHaveValue("change-order");
+
+    await page.getByLabel("Customer name").fill("SYNTHETIC Customer");
+    await page.getByLabel("Original estimate number").fill("2026-014");
+    await page.getByLabel("Change order number").fill("CO-1");
+    await page.getByRole("button", { name: "Add labor line" }).click();
+    await page.getByLabel("Activity").fill("SYNTHETIC scope reduction");
+    await page.getByLabel("Quantity").fill("-4");
+    await expect(page.getByTestId("customer-total")).toHaveText(/-\$100\.00/);
+
+    const preview = () =>
+        page
+            .getByTestId("customer-preview")
+            .evaluate(
+                (frame: HTMLIFrameElement) =>
+                    frame.contentDocument?.body?.innerText ?? ""
+            );
+    await expect.poll(preview).toContain("Change Order");
+    await expect.poll(preview).toContain("ORIGINAL ESTIMATE #");
+    await expect.poll(preview).toContain("2026-014");
+    await expect.poll(preview).toContain("NET CHANGE");
+    await expect.poll(preview).toContain("-$100.00");
+
+    const doc = createDocument(
+        SUGGESTED_CATALOG,
+        [],
+        "2026-11-05T15:00:00.000Z",
+        "2026-11-05",
+        { documentType: "change-order" }
+    );
+    const payload = recalculate({
+        ...doc,
+        customer: { ...doc.customer, name: "SYNTHETIC Customer" },
+        originalEstimateNumber: "2026-014",
+        changeOrderNumber: "CO-1",
+        lines: [
+            createLine("labor", doc.ruleSnapshot, {
+                name: "SYNTHETIC scope reduction",
+                quantity: -4,
+            }),
+        ],
+    });
+    const response = await request.post("/api/estimate/pdf", { data: payload });
+    expect(response.status()).toBe(200);
+    const body = await response.body();
+    const text = body.toString("latin1");
+    expect(body.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(text).toContain("Change Order");
+
+    const pdfPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download PDF" }).click();
+    const pdf = await pdfPromise;
+    expect(pdf.suggestedFilename()).toMatch(/^RWG_ChangeOrder_/);
+});

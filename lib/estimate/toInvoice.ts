@@ -1,6 +1,10 @@
 import { sumMoney } from "./money";
 import type { EstimateDocument } from "./schema";
-import { printedNotes } from "./view";
+import {
+    changeOrderDisplayNumber,
+    isChangeOrder,
+    printedNotes,
+} from "./view";
 
 /**
  * Invoice draft shape the invoice page already restores.
@@ -104,10 +108,18 @@ export function estimateAsInvoice(
     templateId: number,
     logo: string
 ): InvoiceDraft {
+    const number = isChangeOrder(doc)
+        ? changeOrderDisplayNumber(doc) || "Change order"
+        : doc.estimateNumber.trim() || "Estimate";
     const draft = estimateToInvoice(doc, {
-        invoiceNumber: doc.estimateNumber.trim() || "Estimate",
+        invoiceNumber: number,
         invoiceDate: asInvoiceDate(doc.estimateDate, doc.createdAt),
     });
+    const originalRef = doc.originalEstimateNumber.trim();
+    const paymentTerms =
+        isChangeOrder(doc) && originalRef
+            ? `References original estimate #${originalRef}.\n\n${draft.details.paymentTerms}`
+            : draft.details.paymentTerms;
     const due = doc.validThrough.trim()
         ? asInvoiceDate(doc.validThrough, draft.details.invoiceDate)
         : draft.details.invoiceDate;
@@ -116,6 +128,7 @@ export function estimateAsInvoice(
         details: {
             ...draft.details,
             dueDate: due,
+            paymentTerms,
             invoiceLogo: logo.startsWith("data:image/") || logo.startsWith("/")
                 ? logo
                 : draft.details.invoiceLogo,

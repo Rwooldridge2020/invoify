@@ -19,7 +19,7 @@ function slug(value: string, fallback: string): string {
 }
 
 export function documentFileName(
-    kind: "Invoice" | "Estimate",
+    kind: "Invoice" | "Estimate" | "ChangeOrder",
     customer: string,
     number: string,
     extension: string
@@ -32,7 +32,7 @@ export function documentFileName(
 
 /** Accept only names this helper produces, so an upload cannot set the attachment path. */
 export function safePdfAttachmentName(name: string): string {
-    return /^RWG_(Invoice|Estimate)_[A-Za-z0-9][A-Za-z0-9._-]*_[A-Za-z0-9][A-Za-z0-9._-]*\.pdf$/.test(
+    return /^RWG_(Invoice|Estimate|ChangeOrder)_[A-Za-z0-9][A-Za-z0-9._-]*_[A-Za-z0-9][A-Za-z0-9._-]*\.pdf$/.test(
         name
     )
         ? name
