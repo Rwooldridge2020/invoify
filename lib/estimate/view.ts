@@ -1,6 +1,6 @@
 import { letterheadLines } from "./letterhead";
 import { formatQuantity } from "./money";
-import type { EstimateDocument } from "./schema";
+import type { DocumentType, EstimateDocument } from "./schema";
 
 /** Customer PDF fields only. Internal cost, markup, and notes are not copied. */
 
@@ -18,7 +18,10 @@ export type CustomerEstimateView = {
     logoSrc: string;
     sender: EstimateDocument["sender"];
     customer: EstimateDocument["customer"];
+    documentType: DocumentType;
     estimateNumber: string;
+    originalEstimateNumber: string;
+    changeOrderNumber: string;
     estimateDate: string;
     validThrough: string;
     lines: CustomerLineView[];
@@ -28,6 +31,20 @@ export type CustomerEstimateView = {
     acceptedBy: string;
     acceptedDate: string;
 };
+
+export function isChangeOrder(doc: EstimateDocument): boolean {
+    return doc.documentType === "change-order";
+}
+
+export function estimateDownloadKind(
+    doc: EstimateDocument
+): "Estimate" | "ChangeOrder" {
+    return isChangeOrder(doc) ? "ChangeOrder" : "Estimate";
+}
+
+export function changeOrderDisplayNumber(doc: EstimateDocument): string {
+    return doc.changeOrderNumber.trim() || doc.estimateNumber.trim();
+}
 
 function cityLine(party: {
     city: string;
@@ -59,7 +76,9 @@ export function printedNotes(doc: EstimateDocument): string {
     // amount stays on the estimate record and in the form; it is not inserted
     // here, or a second deposit paragraph appears on the PDF.
     const parts: string[] = [];
-    if (doc.depositTerms.trim()) parts.push(doc.depositTerms.trim());
+    if (!isChangeOrder(doc) && doc.depositTerms.trim()) {
+        parts.push(doc.depositTerms.trim());
+    }
     if (doc.scope.trim()) parts.push(doc.scope.trim());
     if (doc.customerNotes.trim()) parts.push(doc.customerNotes.trim());
     return parts.join("\n\n");
@@ -73,7 +92,10 @@ export function toCustomerView(
         logoSrc,
         sender: doc.sender,
         customer: doc.customer,
+        documentType: doc.documentType,
         estimateNumber: doc.estimateNumber,
+        originalEstimateNumber: doc.originalEstimateNumber,
+        changeOrderNumber: doc.changeOrderNumber,
         estimateDate: doc.estimateDate,
         validThrough: doc.validThrough,
         lines: doc.lines.map((line) => ({

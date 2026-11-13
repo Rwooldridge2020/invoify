@@ -13,6 +13,10 @@ describe("document file names", () => {
             documentFileName("Estimate", "Smith Co", "2026-001", "pdf"),
             "RWG_Estimate_Smith-Co_2026-001.pdf"
         );
+        assert.equal(
+            documentFileName("ChangeOrder", "Smith Co", "CO-2", "pdf"),
+            "RWG_ChangeOrder_Smith-Co_CO-2.pdf"
+        );
     });
 
     it("turns spaces into hyphens and strips illegal characters", () => {

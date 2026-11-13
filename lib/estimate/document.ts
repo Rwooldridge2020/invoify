@@ -10,6 +10,7 @@ import {
     jobFileSchema,
     type EstimateCatalog,
     type EstimateDocument,
+    type DocumentType,
     type EstimateLine,
     type JobFile,
 } from "./schema";
@@ -79,8 +80,10 @@ export function createDocument(
     catalog: EstimateCatalog,
     existing: { estimateNumber: string }[],
     nowIso: string,
-    estimateDate: string
+    estimateDate: string,
+    options?: { documentType?: DocumentType }
 ): EstimateDocument {
+    const documentType = options?.documentType ?? "estimate";
     const rules = structuredClone(catalog.rules);
     return recalculate({
         schemaVersion: ESTIMATE_SCHEMA_VERSION,
@@ -93,6 +96,9 @@ export function createDocument(
         createdAt: nowIso,
         updatedAt: nowIso,
         estimateNumber: nextEstimateNumber(existing, estimateDate),
+        documentType,
+        originalEstimateNumber: "",
+        changeOrderNumber: "",
         estimateDate,
         validityDays: rules.validityDays,
         validThrough: estimateDate,

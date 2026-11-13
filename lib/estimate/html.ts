@@ -1,7 +1,11 @@
 import { formatUsDate } from "./dates";
 import { RW_LETTERHEAD } from "./letterhead";
 import { formatMoney } from "./money";
-import { customerLines, senderLines, type CustomerEstimateView } from "./view";
+import {
+    customerLines,
+    senderLines,
+    type CustomerEstimateView,
+} from "./view";
 
 export function escapeHtml(value: string): string {
     return value
@@ -24,6 +28,34 @@ function exclusionItems(text: string): string[] {
         .map((line) => line.replace(/^[•*-]\s*/, ""));
 }
 
+function changeOrderNumber(view: CustomerEstimateView): string {
+    return view.changeOrderNumber.trim() || view.estimateNumber.trim();
+}
+
+function documentTitle(view: CustomerEstimateView): string {
+    return view.documentType === "change-order" ? "Change Order" : "Estimate";
+}
+
+function metaRows(view: CustomerEstimateView): string {
+    if (view.documentType === "change-order") {
+        const original = view.originalEstimateNumber.trim();
+        return `<tr><td class="k">CHANGE ORDER #</td><td>${escapeHtml(changeOrderNumber(view))}</td></tr>
+      <tr><td class="k">DATE</td><td>${escapeHtml(formatUsDate(view.estimateDate))}</td></tr>
+      ${
+          original
+              ? `<tr><td class="k">ORIGINAL ESTIMATE #</td><td>${escapeHtml(original)}</td></tr>`
+              : ""
+      }`;
+    }
+    return `<tr><td class="k">ESTIMATE #</td><td>${escapeHtml(view.estimateNumber)}</td></tr>
+      <tr><td class="k">DATE</td><td>${escapeHtml(formatUsDate(view.estimateDate))}</td></tr>
+      <tr><td class="k">EXPIRATION DATE</td><td>${escapeHtml(formatUsDate(view.validThrough))}</td></tr>`;
+}
+
+function totalLabel(view: CustomerEstimateView): string {
+    return view.documentType === "change-order" ? "NET CHANGE" : "TOTAL";
+}
+
 /**
  * Customer estimate HTML. Layout follows the sent US Letter estimate:
  * business header and logo, gray Estimate title, address and meta,
@@ -32,6 +64,7 @@ function exclusionItems(text: string): string[] {
  */
 export function customerEstimateHtml(view: CustomerEstimateView): string {
     const logo = safeLogo(view.logoSrc);
+    const title = documentTitle(view);
     const rows = view.lines
         .map((line) => {
             const date = formatUsDate(line.serviceDate);
@@ -55,7 +88,7 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Estimate ${escapeHtml(view.estimateNumber)}</title>
+<title>${escapeHtml(title)} ${escapeHtml(view.documentType === "change-order" ? changeOrderNumber(view) : view.estimateNumber)}</title>
 <style>
   @page { size: letter; margin: 0; }
   * { box-sizing: border-box; }
@@ -128,7 +161,7 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
     </div>
     ${logo ? `<img class="logo" alt="RW Grading Estimates" src="${escapeHtml(logo)}" />` : ""}
   </div>
-  <h1>Estimate</h1>
+  <h1>${escapeHtml(title)}</h1>
   <div class="meta">
     <div>
       <div class="label">ADDRESS</div>
@@ -144,9 +177,7 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
       }
     </div>
     <table class="meta-table">
-      <tr><td class="k">ESTIMATE #</td><td>${escapeHtml(view.estimateNumber)}</td></tr>
-      <tr><td class="k">DATE</td><td>${escapeHtml(formatUsDate(view.estimateDate))}</td></tr>
-      <tr><td class="k">EXPIRATION DATE</td><td>${escapeHtml(formatUsDate(view.validThrough))}</td></tr>
+      ${metaRows(view)}
     </table>
   </div>
   <hr class="rule" />
@@ -175,7 +206,7 @@ export function customerEstimateHtml(view: CustomerEstimateView): string {
       ${exclusions ? `<ul>${exclusions}</ul>` : ""}
     </div>
     <div class="totalbox">
-      <div class="label">TOTAL</div>
+      <div class="label">${escapeHtml(totalLabel(view))}</div>
       <div class="amt">${escapeHtml(formatMoney(view.total))}</div>
     </div>
   </div>

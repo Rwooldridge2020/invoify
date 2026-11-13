@@ -38,7 +38,8 @@ import {
 import { estimateAsInvoice, estimateToInvoice } from "@/lib/estimate/toInvoice";
 import { TEMPLATES } from "@/app/components/templates/invoice-pdf/registry";
 import DynamicInvoiceTemplate from "@/app/components/templates/invoice-pdf/DynamicInvoiceTemplate";
-import { toCustomerView } from "@/lib/estimate/view";
+import { estimateTemplateLabels } from "@/lib/estimate/templateLabels";
+import { estimateDownloadKind, toCustomerView } from "@/lib/estimate/view";
 import { buildBackup, mergeBackup, parseBackup } from "@/lib/backup";
 import BaseButton from "@/app/components/reusables/BaseButton";
 import Subheading from "@/app/components/reusables/Subheading";
@@ -79,7 +80,9 @@ export default function EstimateWorkspace() {
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
     const [draftState, setDraftState] = useState("");
-    const [confirmNew, setConfirmNew] = useState(false);
+    const [confirmNew, setConfirmNew] = useState<false | "estimate" | "change-order">(
+        false
+    );
     const [importChoice, setImportChoice] = useState<EstimateDocument | null>(
         null
     );
@@ -269,17 +272,22 @@ export default function EstimateWorkspace() {
         setNotice("Opened a copy as a new draft.");
     }
 
-    function startNew() {
+    function startNew(kind: "estimate" | "change-order") {
         blockDraftWrite.current = false;
         const created = createDocument(
             catalog,
             library,
             nowIso(),
-            localIsoDate()
+            localIsoDate(),
+            { documentType: kind }
         );
         setDoc(created);
         setConfirmNew(false);
-        setNotice("New estimate. The customer is blank.");
+        setNotice(
+            kind === "change-order"
+                ? "New change order. Enter the original estimate number and added or removed lines."
+                : "New estimate. The customer is blank."
+        );
         void writeSecure(DRAFT_KEY, created);
     }
 
@@ -301,7 +309,7 @@ export default function EstimateWorkspace() {
         downloadBlob(
             blob,
             documentFileName(
-                "Estimate",
+                estimateDownloadKind(current),
                 current.customer.name,
                 current.estimateNumber,
                 "json"
@@ -463,7 +471,7 @@ export default function EstimateWorkspace() {
             downloadBlob(
                 blob,
                 documentFileName(
-                    "Estimate",
+                    estimateDownloadKind(doc),
                     doc.customer.name,
                     doc.estimateNumber,
                     "pdf"
@@ -525,7 +533,9 @@ export default function EstimateWorkspace() {
     }
 
     const locked = doc.status === "issued";
+    const changeOrder = doc.documentType === "change-order";
     const templateId = doc.pdfTemplate || 1;
+    const templateLabelOverrides = estimateTemplateLabels(doc);
     const preview = customerEstimateHtml(
         toCustomerView(doc, doc.logoDataUrl || LOGO_SRC)
     );
@@ -561,9 +571,16 @@ export default function EstimateWorkspace() {
                     <button
                         type="button"
                         className={btn}
-                        onClick={() => setConfirmNew(true)}
+                        onClick={() => setConfirmNew("estimate")}
                     >
                         New estimate
+                    </button>
+                    <button
+                        type="button"
+                        className={btn}
+                        onClick={() => setConfirmNew("change-order")}
+                    >
+                        New change order
                     </button>
                     <button
                         type="button"
@@ -579,7 +596,7 @@ export default function EstimateWorkspace() {
                         onClick={() => void issue()}
                         disabled={locked}
                     >
-                        Issue estimate
+                        {changeOrder ? "Issue change order" : "Issue estimate"}
                     </button>
                     <button
                         type="button"
@@ -670,13 +687,16 @@ export default function EstimateWorkspace() {
                 {confirmNew && (
                     <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-4 text-sm">
                         <span>
-                            Start a new estimate? Save first if this draft
-                            should stay in the list.
+                            Start a new{" "}
+                            {confirmNew === "change-order"
+                                ? "change order"
+                                : "estimate"}
+                            ? Save first if this draft should stay in the list.
                         </span>
                         <button
                             type="button"
                             className={btn}
-                            onClick={startNew}
+                            onClick={() => startNew(confirmNew)}
                         >
                             Start new
                         </button>
@@ -726,9 +746,30 @@ export default function EstimateWorkspace() {
 
                 <section className="grid gap-3 sm:grid-cols-2">
                     <label className="text-sm">
-                        Estimate number
+                        Document type
+                        <select
+                            className={field}
+                            aria-label="Document type"
+                            value={doc.documentType}
+                            disabled={locked}
+                            onChange={(event) =>
+                                update({
+                                    documentType: event.target
+                                        .value as EstimateDocument["documentType"],
+                                })
+                            }
+                        >
+                            <option value="estimate">Estimate</option>
+                            <option value="change-order">Change order</option>
+                        </select>
+                    </label>
+                    <label className="text-sm">
+                        {changeOrder ? "Job number" : "Estimate number"}
                         <input
                             className={field}
+                            aria-label={
+                                changeOrder ? "Job number" : "Estimate number"
+                            }
                             value={doc.estimateNumber}
                             disabled={locked}
                             onChange={(event) =>
@@ -736,8 +777,43 @@ export default function EstimateWorkspace() {
                             }
                         />
                     </label>
+                    {changeOrder && (
+                        <>
+                            <label className="text-sm">
+                                Original estimate #
+                                <input
+                                    className={field}
+                                    aria-label="Original estimate number"
+                                    value={doc.originalEstimateNumber}
+                                    disabled={locked}
+                                    onChange={(event) =>
+                                        update({
+                                            originalEstimateNumber:
+                                                event.target.value,
+                                        })
+                                    }
+                                />
+                            </label>
+                            <label className="text-sm">
+                                Change order # (optional)
+                                <input
+                                    className={field}
+                                    aria-label="Change order number"
+                                    placeholder="Uses job number when blank"
+                                    value={doc.changeOrderNumber}
+                                    disabled={locked}
+                                    onChange={(event) =>
+                                        update({
+                                            changeOrderNumber:
+                                                event.target.value,
+                                        })
+                                    }
+                                />
+                            </label>
+                        </>
+                    )}
                     <label className="text-sm">
-                        Estimate date
+                        {changeOrder ? "Change order date" : "Estimate date"}
                         <input
                             className={field}
                             type="date"
@@ -784,7 +860,9 @@ export default function EstimateWorkspace() {
                     </label>
                 </section>
 
-                <section className="rounded-xl border border-border bg-card p-4">
+                <section
+                    className={`rounded-xl border border-border bg-card p-4 ${changeOrder ? "hidden" : ""}`}
+                >
                     <Subheading>Deposit</Subheading>
                     <p className="text-sm text-muted-foreground">
                         Default is COD and 30% to schedule. Change it on this
@@ -1190,6 +1268,9 @@ export default function EstimateWorkspace() {
                                 className="flex flex-wrap items-center gap-2 text-sm"
                             >
                                 <span>
+                                    {row.documentType === "change-order"
+                                        ? "CO "
+                                        : ""}
                                     {row.estimateNumber} r{row.revision}{" "}
                                     {row.status}{" "}
                                     {row.customer.name || "No customer"}{" "}
@@ -1257,6 +1338,7 @@ export default function EstimateWorkspace() {
                                         templateId,
                                         doc.logoDataUrl || LOGO_SRC
                                     )}
+                                    labels={templateLabelOverrides}
                                     locale={locale}
                                 />
                             </div>

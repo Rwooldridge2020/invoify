@@ -7,7 +7,12 @@ import { defaultLogoDataUrl } from "@/lib/estimate/defaultLogo";
 import { customerEstimateHtml } from "@/lib/estimate/html";
 import { estimateSchema, type EstimateDocument } from "@/lib/estimate/schema";
 import { estimateAsInvoice } from "@/lib/estimate/toInvoice";
-import { toCustomerView } from "@/lib/estimate/view";
+import { estimateTemplateLabels } from "@/lib/estimate/templateLabels";
+import {
+    changeOrderDisplayNumber,
+    estimateDownloadKind,
+    toCustomerView,
+} from "@/lib/estimate/view";
 import { getInvoiceTemplate } from "@/lib/helpers";
 import { getMessages } from "@/i18n/messages";
 import { PDF_TAILWIND_CSS } from "@/lib/pdfStyles.generated";
@@ -28,14 +33,19 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return parsed.response;
 
     const doc = parsed.data as EstimateDocument;
+    const fileKind = estimateDownloadKind(doc);
+    const fileNumber =
+        doc.documentType === "change-order"
+            ? changeOrderDisplayNumber(doc)
+            : doc.estimateNumber;
     try {
         const logo = doc.logoDataUrl || (await defaultLogoDataUrl());
         if (doc.pdfTemplate !== 1) {
             const pdf = await invoiceLayoutPdf(doc, doc.pdfTemplate, logo);
             const filename = documentFileName(
-                "Estimate",
+                fileKind,
                 doc.customer.name,
-                doc.estimateNumber,
+                fileNumber,
                 "pdf"
             );
             return new NextResponse(Buffer.from(pdf), {
@@ -73,9 +83,9 @@ export async function POST(req: NextRequest) {
         });
 
         const filename = documentFileName(
-            "Estimate",
+            fileKind,
             doc.customer.name,
-            doc.estimateNumber,
+            fileNumber,
             "pdf"
         );
         return new NextResponse(Buffer.from(pdf), {
@@ -104,10 +114,13 @@ async function invoiceLayoutPdf(
     const InvoiceTemplate = await getInvoiceTemplate(templateId);
     if (!InvoiceTemplate) throw new Error("Unknown estimate template");
     const messages = await getMessages("en");
+    const baseLabels = buildInvoiceLabels(messages);
+    const overlay = estimateTemplateLabels(doc);
+    const labels = overlay ? { ...baseLabels, ...overlay } : baseLabels;
     const html = (await import("react-dom/server")).default.renderToStaticMarkup(
         React.createElement(InvoiceTemplate, {
             ...estimateAsInvoice(doc, templateId, logo),
-            labels: buildInvoiceLabels(messages),
+            labels,
             locale: "en",
         })
     );
